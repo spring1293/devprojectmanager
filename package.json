@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
+    "@google/genai": "^2.6.0",
     "@octokit/rest": "^22.0.1",
     "firebase-admin": "^13.10.0",
     "googleapis": "^171.4.0",
