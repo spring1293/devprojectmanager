@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Repository } from "@/types/repository";
+import { useRouter } from "next/navigation";
 
 //APIから帰ってくるデータの型
 type AnalyzeResult = {
@@ -18,6 +19,7 @@ export default function Home() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalyzeResult | null>(null);
+  const router = useRouter();
 
   const handleSubmit = async () => {
     if (!text.trim()) return;
@@ -35,6 +37,8 @@ export default function Home() {
       }
 
       const data = await res.json();
+      //機能要件抽出ページで使うためのテキストを保存
+      localStorage.setItem("requirementsText", text);
       setResult(data);
     } catch (e) {
       alert(String(e));
@@ -88,6 +92,12 @@ export default function Home() {
               </ul>
             )}
           </div>
+          <button
+            className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            onClick={() => router.push("/features")}
+          >
+            機能要件を抽出する→
+          </button>
         </div>
       )}
     </main>
