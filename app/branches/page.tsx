@@ -125,7 +125,7 @@ export default function BranchesPage() {
             const res = await fetch("/api/create-repo", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ repoName, branches }),
+              body: JSON.stringify({ repoName, branches, features }),
             });
             const data = await res.json();
             //作成したリポジトリ名をlocalStorageに保存して次フェーズへ

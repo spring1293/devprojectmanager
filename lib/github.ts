@@ -42,3 +42,24 @@ export async function createBranch(
     sha,
   });
 }
+
+//コミットの変更差分(diff)を取得する
+export async function getDiff(
+  fullRepoName: string, //例"suername/repo-name"
+  commitSha: string, //対象コミットのSHA
+): Promise<string> {
+  const [owner, repo] = fullRepoName.split("/");
+
+  const { data } = await octokit.rest.repos.getCommit({
+    owner,
+    repo,
+    ref: commitSha,
+  });
+
+  //変更されたファイルのdiffをまとめて一つの文字列にする
+  const diffs = (data.files ?? [])
+    .map((file) => `=== ${file.filename} === \n${file.patch ?? ""}`)
+    .join("\n\n");
+
+  return diffs;
+}

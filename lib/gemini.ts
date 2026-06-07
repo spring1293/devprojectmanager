@@ -113,3 +113,37 @@ export async function designBranches(features: Feature[]): Promise<Branch[]> {
 
   return JSON.parse(jsonMatch[0]);
 }
+
+//diffと機能要件を照合してコードレビューを行う。
+export async function reviewCode(
+  diff: string,
+  features: Feature[],
+): Promise<string> {
+  const featureList = features
+    .map((f) => `- [${f.priority}] ${f.title}: ${f.description}`)
+    .join("\n");
+
+  const prompt = `
+    あなたはコードレビュアーです。以下の機能要件と実装差分(diff)を照合し、レビューコメントを日本語で記述してください。
+
+    【機能要件】
+    ${featureList}
+
+    【実装差分(diff)】
+    ${diff}
+
+    以下の観点でレビューしてください：
+    - 機能要件を満たしているか
+    - 明らかなバグや問題点がないか
+    - 改善提案があれば記載する
+
+    レビュー結果のみを記述してください。
+  `;
+
+  const result = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+  });
+
+  return result.text ?? "レビュー結果を取得できませんでした";
+}
