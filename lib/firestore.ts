@@ -97,3 +97,18 @@ export async function getBranchByName(
     lastReview: string;
   };
 }
+
+//全てのブランチ情報を取得する(ダッシュボード用)
+export async function getAllBranches(): Promise<
+  (Branch & { fullRepoName: string; features: Feature[]; lastReview: string })[]
+> {
+  const snapshot = await db.collection("branches").get();
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as (Branch & {
+    fullRepoName: string;
+    features: Feature[];
+    lastReview: string;
+  })[];
+}
