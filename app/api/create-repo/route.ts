@@ -28,24 +28,22 @@ export async function POST(req: NextRequest) {
     const fullRepoName = await createRepository(repoName);
 
     //各ブランチを作成し、担当者にメールを送信
-    for (const branch of branches) {
-      await createBranch(fullRepoName, branch.branchName);
-
-      //このブランチが担当する機能要件だけを絞り込みんでFiresotreに保存
-      const branchFeatures = features.filter((f) =>
-        branch.featureIds.includes(f.id),
-      );
-      await saveBranch(branch, fullRepoName, branchFeatures);
-
-      //担当者が設定されている場合のみメール送信
-      if (branch.assignee) {
-        await sendMail(
-          branch.assignee,
-          `【作業依頼】 ${branch.branchName}`,
-          `担当ブランチが作成されました。\n\nリポジトリ:https://github.com/${fullRepoName}\nブランチ: ${branch.branchName}\n\n担当機能IDリスト: ${branch.featureIds.join(",")}`,
+    await Promise.allSettled(
+      branches.map(async (branch) => {
+        await createBranch(fullRepoName, branch.branchName);
+        const branchFeatures = features.filter((f) =>
+          branch.featureIds.includes(f.id),
         );
-      }
-    }
+        await saveBranch(branch, fullRepoName, branchFeatures);
+        if (branch.assignee) {
+          await sendMail(
+            branch.assignee,
+            `【作業依頼】 ${branch.branchName}`,
+            `担当ブランチが作成されました。\n\nリポジトリ:https://github.com/${fullRepoName}\nブランチ: ${branch.branchName}\n\n担当機能IDリスト: ${branch.featureIds.join(",")}`,
+          );
+        }
+      }),
+    );
 
     return NextResponse.json({ fullRepoName });
   } catch (error) {
