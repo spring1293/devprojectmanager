@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDiff } from "@/lib/github";
 import { reviewCode } from "@/lib/gemini";
-import { getBranchByName } from "@/lib/firestore";
+import { getBranchByName, updateBranchReview } from "@/lib/firestore";
 import { sendMail } from "@/lib/gmail";
+
+//本ルートをビルド時に解析しない
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,6 +37,8 @@ export async function POST(req: NextRequest) {
 
     //Geminiでコードレビューを実行
     const reviewResult = await reviewCode(diff, branchData.features);
+    //レビュー結果をfirestoreに追加
+    await updateBranchReview(branchData.id, reviewResult);
 
     //担当者にレビュー結果をメール送信
     if (branchData.assignee) {

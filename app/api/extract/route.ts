@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractFeatures } from "@/lib/gemini";
 
+//本ルートをビルド時に解析しない
+export const dynamic = "force-dynamic";
+
 //POST /api/extract
 export async function POST(req: NextRequest) {
   try {

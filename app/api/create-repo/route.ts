@@ -5,6 +5,9 @@ import { saveBranch } from "@/lib/firestore";
 import type { Branch } from "@/types/branch";
 import type { Feature } from "@/types/feature";
 
+//本ルートをビルド時に解析しない
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const {

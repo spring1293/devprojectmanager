@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { designBranches } from "@/lib/gemini";
 import { Feature } from "@/types/feature";
 
+//本ルートをビルド時に解析しない
+export const dynamic = "force-dynamic";
+
 //feature:機能要件1件分の型
 //designBranches:ブランチ設計を提案する関数。
 

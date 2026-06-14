@@ -3,6 +3,9 @@ import { analyzeRequirements, generateEmbedding } from "@/lib/gemini";
 import { getRepositories, searchSimilarRepositories } from "@/lib/firestore";
 import { Repository } from "@/types/repository";
 
+//本ルートをビルド時に解析しない
+export const dynamic = "force-dynamic";
+
 //POST /api/analyze
 export async function POST(req: NextRequest) {
   try {

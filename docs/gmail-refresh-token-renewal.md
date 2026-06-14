@@ -30,9 +30,9 @@ https://developers.google.com/oauthplayground
 2. 「Use your own OAuth credentials」にチェックを入れる
 3. 以下の値を入力する
 
-| 項目 | 値 |
-|---|---|
-| OAuth Client ID | `.env.local` の `GMAIL_CLIENT_ID` の値 |
+| 項目                | 値                                         |
+| ------------------- | ------------------------------------------ |
+| OAuth Client ID     | `.env.local` の `GMAIL_CLIENT_ID` の値     |
 | OAuth Client secret | `.env.local` の `GMAIL_CLIENT_SECRET` の値 |
 
 4. 設定を閉じる
@@ -42,7 +42,7 @@ https://developers.google.com/oauthplayground
 ### ③ スコープを選択して認証する
 
 1. 左側のリストから `Gmail API v1` を展開する
-2. `https://mail.googleapis.com/` を選択する
+2. `https://www.googleapis.com/auth/gmail.send`を選択する
 3. 「Authorize APIs」をクリックする
 4. Googleアカウントの選択画面が出たら、送信元にするGmailアカウントを選ぶ
 5. 権限の許可画面で「続行」をクリックする

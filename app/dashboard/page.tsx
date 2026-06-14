@@ -1,5 +1,8 @@
 import { getAllBranches } from "@/lib/firestore";
 
+//本ルートをビルド時に解析しない
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   //サーバーサイドで直接Firestoreからデータ取得(APIを経由しない)
   const branches = await getAllBranches();

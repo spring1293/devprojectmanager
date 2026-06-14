@@ -4,26 +4,26 @@ import { Repository } from "@/types/repository";
 import type { Branch } from "@/types/branch";
 import type { Feature } from "@/types/feature";
 
-//Firebase Adminの初期化(すでに初期化済みの婆はスキップ)
-if (!getApps().length) {
-  initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_SERVICE_ACCOUNT_KEY?.replace(
-        /\\n/g,
-        "\n",
-      ),
-    }),
-  });
+//Firebase Adminの初期化、Firestoreクライアントをエクスポート(関数化した)
+function getDB() {
+  if (!getApps().length) {
+    initializeApp({
+      credential: cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_SERVICE_ACCOUNT_KEY?.replace(
+          /\\n/g,
+          "\n",
+        ),
+      }),
+    });
+  }
+  return getFirestore();
 }
-
-//Firestoreクライアントをエクスポート
-export const db = getFirestore();
 
 //repositoriesコレクションの全データを取得する
 export async function getRepositories(): Promise<Repository[]> {
-  const snapshot = await db.collection("repositories").get();
+  const snapshot = await getDB().collection("repositories").get();
 
   return snapshot.docs.map((doc) => ({
     id: doc.id,
@@ -35,7 +35,7 @@ export async function getRepositories(): Promise<Repository[]> {
 export async function saveRepository(
   data: Omit<Repository, "id">,
 ): Promise<string> {
-  const docRef = await db.collection("repositories").add(data);
+  const docRef = await getDB().collection("repositories").add(data);
   return docRef.id;
 }
 
@@ -44,12 +44,14 @@ export async function searchSimilarRepositories(
   queryVector: number[],
   limit: number = 5,
 ): Promise<Repository[]> {
-  const vectorQuery = db.collection("repositories").findNearest({
-    vectorField: "embeddingVector",
-    queryVector: FieldValue.vector(queryVector),
-    limit,
-    distanceMeasure: "COSINE",
-  });
+  const vectorQuery = getDB()
+    .collection("repositories")
+    .findNearest({
+      vectorField: "embeddingVector",
+      queryVector: FieldValue.vector(queryVector),
+      limit,
+      distanceMeasure: "COSINE",
+    });
   const snapshot = await vectorQuery.get();
   return snapshot.docs.map((doc) => ({
     id: doc.id,
@@ -64,7 +66,7 @@ export async function saveBranch(
   fullRepoName: string,
   features: Feature[],
 ): Promise<string> {
-  const docRef = await db.collection("branches").add({
+  const docRef = await getDB().collection("branches").add({
     branchName: branch.branchName,
     fullRepoName,
     assignee: branch.assignee,
@@ -82,7 +84,7 @@ export async function getBranchByName(
   | (Branch & { fullRepoName: string; features: Feature[]; lastReview: string })
   | null
 > {
-  const snapshot = await db
+  const snapshot = await getDB()
     .collection("branches")
     .where("branchName", "==", branchName)
     .limit(1)
@@ -102,7 +104,7 @@ export async function getBranchByName(
 export async function getAllBranches(): Promise<
   (Branch & { fullRepoName: string; features: Feature[]; lastReview: string })[]
 > {
-  const snapshot = await db.collection("branches").get();
+  const snapshot = await getDB().collection("branches").get();
   return snapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
@@ -111,4 +113,14 @@ export async function getAllBranches(): Promise<
     features: Feature[];
     lastReview: string;
   })[];
+}
+
+//ブランチのレビュー結果をFirestoreに保存する
+export async function updateBranchReview(
+  branchId: string,
+  reviewResult: string,
+): Promise<void> {
+  await getDB().collection("branches").doc(branchId).update({
+    lastReview: reviewResult,
+  });
 }

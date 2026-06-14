@@ -2,8 +2,9 @@ import { GoogleGenAI } from "@google/genai";
 import { Feature } from "@/types/feature";
 import { Branch } from "@/types/branch";
 
-//APIキーでGeminiクライアントを初期化
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+function getAI() {
+  return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+}
 
 //新規/改造を判定する
 export async function analyzeRequirements(text: string): Promise<{
@@ -21,7 +22,7 @@ export async function analyzeRequirements(text: string): Promise<{
   }
   `;
 
-  const result = await ai.models.generateContent({
+  const result = await getAI().models.generateContent({
     model: "gemini-2.5-flash",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
@@ -35,7 +36,7 @@ export async function analyzeRequirements(text: string): Promise<{
 
 //テキストをベクトル変換する
 export async function generateEmbedding(text: string): Promise<number[]> {
-  const result = await ai.models.embedContent({
+  const result = await getAI().models.embedContent({
     model: "text-embedding-004",
     contents: text,
   });
@@ -62,7 +63,7 @@ export async function extractFeatures(text: string): Promise<Feature[]> {
 
     ]
   `;
-  const result = await ai.models.generateContent({
+  const result = await getAI().models.generateContent({
     model: "gemini-2.5-flash",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
@@ -100,7 +101,7 @@ export async function designBranches(features: Feature[]): Promise<Branch[]> {
     ]
   `;
 
-  const result = await ai.models.generateContent({
+  const result = await getAI().models.generateContent({
     model: "gemini-2.5-flash",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
@@ -140,7 +141,7 @@ export async function reviewCode(
     レビュー結果のみを記述してください。
   `;
 
-  const result = await ai.models.generateContent({
+  const result = await getAI().models.generateContent({
     model: "gemini-2.5-flash",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
