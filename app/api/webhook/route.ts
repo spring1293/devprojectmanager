@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHmac, timingSafeEqual } from "crypto";
 import { getDiff } from "@/lib/github";
 import { reviewCode } from "@/lib/gemini";
 import { getBranchByName, updateBranchReview } from "@/lib/firestore";
@@ -9,7 +10,30 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
-    const payload = await req.json();
+    //const payload = await req.json();
+    //署名検証機能を追加
+    //①生のボディ文字列を取得(署名検証に使用)
+    const rawBody = await req.text();
+
+    //②署名を検証する
+    const signature = req.headers.get("x-hub-signature-256") ?? "";
+    const expected =
+      "sha256=" +
+      createHmac("sha256", process.env.GITHUB_WEBHOOK_SECRET!)
+        .update(rawBody)
+        .digest("hex");
+    //timingSafeEqualはBuffer長が同じでないとエラーになるため、長さチェックが必要
+    const sigBuffer = Buffer.from(signature);
+    const expectedBuffer = Buffer.from(expected);
+    const isValid =
+      sigBuffer.length === expectedBuffer.length &&
+      timingSafeEqual(sigBuffer, expectedBuffer);
+    if (!isValid) {
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    }
+
+    //③検証通過後にJSONとしてパース(req.json()は使えないのでJSON.parseで)
+    const payload = JSON.parse(rawBody);
 
     //GitHubのpushイベント以外は無視する。
     const event = req.headers.get("x-github-event");
