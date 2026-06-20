@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Repository } from "@/types/repository";
 import { useRouter } from "next/navigation";
+import type { TechStack } from "@/lib/templates";
 
 //APIから帰ってくるデータの型
 type AnalyzeResult = {
@@ -12,6 +13,7 @@ type AnalyzeResult = {
     systemName: string | null;
   };
   condidates: Repository[];
+  techStack: TechStack;
 };
 
 export default function Home() {
@@ -39,6 +41,7 @@ export default function Home() {
       const data = await res.json();
       //機能要件抽出ページで使うためのテキストを保存
       localStorage.setItem("requirementsText", text);
+      localStorage.setItem("techStack", data.techStack);
       setResult(data);
     } catch (e) {
       alert(String(e));

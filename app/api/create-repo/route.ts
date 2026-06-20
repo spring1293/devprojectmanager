@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRepository, createBranch } from "@/lib/github";
+import {
+  createRepository,
+  createBranch,
+  createInitialStructure,
+} from "@/lib/github";
 import { sendMail } from "@/lib/gmail";
 import { saveBranch } from "@/lib/firestore";
 import type { Branch } from "@/types/branch";
 import type { Feature } from "@/types/feature";
+import type { TechStack } from "@/lib/templates";
 
 //本ルートをビルド時に解析しない
 export const dynamic = "force-dynamic";
@@ -14,8 +19,13 @@ export async function POST(req: NextRequest) {
       repoName,
       branches,
       features,
-    }: { repoName: string; branches: Branch[]; features: Feature[] } =
-      await req.json();
+      techStack,
+    }: {
+      repoName: string;
+      branches: Branch[];
+      features: Feature[];
+      techStack: TechStack;
+    } = await req.json();
 
     if (!repoName || !branches || branches.length === 0) {
       return NextResponse.json(
@@ -26,6 +36,9 @@ export async function POST(req: NextRequest) {
 
     //GitHubにリポジトリを作成(full_nameを受け取る)
     const fullRepoName = await createRepository(repoName);
+
+    //技術スタックに対応するフォルダ構成をpushする
+    await createInitialStructure(fullRepoName, techStack);
 
     //各ブランチを作成し、担当者にメールを送信
     await Promise.allSettled(

@@ -1,4 +1,6 @@
 import { Octokit } from "@octokit/rest";
+import { FOLDER_TEMPLATES } from "@/lib/templates";
+import type { TechStack } from "@/lib/templates";
 
 //GitHub personal Access TokenでOctokitクライアントを初期化
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
@@ -62,4 +64,61 @@ export async function getDiff(
     .join("\n\n");
 
   return diffs;
+}
+
+//技術スタックに対応するフォルダ構成をmainブランチにpushする
+export async function createInitialStructure(
+  fullRepoName: string,
+  techStack: TechStack,
+): Promise<void> {
+  const paths = FOLDER_TEMPLATES[techStack];
+
+  //unknownまたはテンプレートがからの場合はスキップ
+  if (paths.length === 0) {
+    return;
+  }
+
+  const [owner, repo] = fullRepoName.split("/");
+
+  //①mainブランチの最新コミットSHAとツリーSHAを取得する
+  const { data: ref } = await octokit.rest.git.getRef({
+    owner,
+    repo,
+    ref: "heads/main",
+  });
+  const { data: commit } = await octokit.rest.git.getCommit({
+    owner,
+    repo,
+    commit_sha: ref.object.sha,
+  });
+
+  //②全フォルダを含む新しいツリーを一括作成する
+  const { data: newTree } = await octokit.rest.git.createTree({
+    owner,
+    repo,
+    base_tree: commit.tree.sha,
+    tree: paths.map((path) => ({
+      path,
+      mode: "100644" as const,
+      type: "blob" as const,
+      content: "",
+    })),
+  });
+
+  //③新しいツリーを指すコミットを作成する
+  const { data: newCommit } = await octokit.rest.git.createCommit({
+    owner,
+    repo,
+    message: `Initial project structure for ${techStack}`,
+    tree: newTree.sha,
+    parents: [ref.object.sha],
+  });
+
+  //④mainブランチを新しいブランチに更新する
+  await octokit.rest.git.updateRef({
+    owner,
+    repo,
+    ref: "heads/main",
+    sha: newCommit.sha,
+  });
 }

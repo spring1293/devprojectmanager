@@ -1,6 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { Feature } from "@/types/feature";
 import { Branch } from "@/types/branch";
+import type { TechStack } from "@/lib/templates";
+import { TECH_STACK_OPTIONS } from "@/lib/templates";
 
 function getAI() {
   return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
@@ -147,4 +149,29 @@ export async function reviewCode(
   });
 
   return result.text ?? "レビュー結果を取得できませんでした";
+}
+
+export async function detectTechStack(text: string): Promise<TechStack> {
+  //TECH_STACK_OPTIONSからプロンプトの選択肢を動的に生成する
+  const options = TECH_STACK_OPTIONS.join("\n");
+
+  const prompt = `
+    以下の要件定義書を読んで、使用する技術スタックを判定してください。
+
+    要件定義書:
+    ${text}
+
+    以下のいずれか一つのみで回答してください。他の文字は含めないでください:
+    ${options}
+  `;
+
+  const result = await getAI().models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+  });
+
+  const response = (result.text ?? "").trim().toLowerCase() as TechStack;
+
+  //TECH_STACK_OPTIONSに含まれない値が返ってきた場合はunknownにフォールバック
+  return TECH_STACK_OPTIONS.includes(response) ? response : "unknown";
 }
