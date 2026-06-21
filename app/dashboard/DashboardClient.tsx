@@ -46,11 +46,10 @@ export default function DashboardClient({
         {/* ブランド行 */}
         <div className="px-[22px] pt-[22px] pb-[18px]">
           <p className="text-sm font-semibold text-[#0000cd] tracking-tight m-0">
-            ハツメイカー(パソコンバージョン)
+            ハツメイカー(デジタルモデル)
           </p>
-          <p className="text-[11px] text-[#8a8a8e] m-0">
-            ソフトウェア開発・運用エージェント
-          </p>
+          <p className="text-[11px] text-[#8a8a8e] m-0">Software Only</p>
+          <p className="text-[11px] text-[#8a8a8e] m-0">DevOps Support</p>
         </div>
 
         {/* セクションラベル */}
