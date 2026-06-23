@@ -140,3 +140,30 @@ export async function getRepositoryById(
   if (!doc.exists) return null;
   return { id: doc.id, ...doc.data() } as Repository;
 }
+
+//inquiriesコレクションの全データを取得する(オペレータ管理画面用)
+export async function getInquiries(): Promise<Inquiry[]> {
+  const snapshot = await getDB()
+    .collection("inquiries")
+    .orderBy("createdAt", "desc")
+    .get();
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Inquiry[];
+}
+
+//IDで問い合わせ1件分を取得する
+export async function getInquiryById(id: string): Promise<Inquiry | null> {
+  const doc = await getDB().collection("inquiries").doc(id).get();
+  if (!doc.exists) return null;
+  return { id: doc.id, ...doc.data() } as Inquiry;
+}
+
+//問い合わせのカテゴリ・ステータス・対応メモを更新
+export async function updateInquiry(
+  id: string,
+  data: Partial<Pick<Inquiry, "confirmedCategory" | "status" | "resolvedNote">>,
+): Promise<void> {
+  await getDB().collection("inquiries").doc(id).update(data);
+}
