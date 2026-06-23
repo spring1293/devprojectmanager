@@ -3,6 +3,7 @@ import { Feature } from "@/types/feature";
 import { Branch } from "@/types/branch";
 import type { TechStack } from "@/lib/templates";
 import { TECH_STACK_OPTIONS } from "@/lib/templates";
+import type { InquiryCategory } from "@/types/inquiry";
 
 function getAI() {
   return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
@@ -174,4 +175,61 @@ export async function detectTechStack(text: string): Promise<TechStack> {
 
   //TECH_STACK_OPTIONSに含まれない値が返ってきた場合はunknownにフォールバック
   return TECH_STACK_OPTIONS.includes(response) ? response : "unknown";
+}
+
+//問い合わせ内容をquestion/bug/featureに分類する
+export async function classifyInquiry(
+  title: string,
+  body: string,
+): Promise<InquiryCategory> {
+  const prompt = `
+    以下の問い合わせ内容を読んで、カテゴリを判定してください。
+
+    タイトル: ${title}
+    内容: ${body}
+
+    以下のいずれか一つのみで回答してください。他の文字は含めないでください:
+    question
+    bug
+    feature
+
+    判定基準:
+    - question: 使い方や仕様に関する質問、説明で解決できるもの
+    - bug: システムの不具合・エラー・期待と異なる動作の報告
+    - feature: 新機能の追加要望・改善提案
+  `;
+
+  const result = await getAI().models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+  });
+
+  const response = (result.text ?? "").trim().toLowerCase() as InquiryCategory;
+  const valid: InquiryCategory[] = ["question", "bug", "feature"];
+
+  //想定外の値が返ってきた場合はquestionにフォールバッグ
+  return valid.includes(response) ? response : "question";
+}
+
+//問い合わせ内容から回答提案を行う
+export async function createSuggestedAnswer(
+  repoContext: string,
+  title: string,
+  body: string,
+): Promise<string> {
+  const prompt = `
+    あなたはシステムサポート担当者です。
+    以下のリポジトリ情報と、リポジトリに対する問い合わせ内容を確認し、回答提案を行なってください。
+
+    リポジトリ情報: ${repoContext}
+    タイトル: ${title}
+    問い合わせ内容: ${body}
+  `;
+
+  const result = await getAI().models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+  });
+
+  return result.text ?? "提案失敗";
 }

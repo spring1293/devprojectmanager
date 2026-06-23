@@ -2,6 +2,7 @@
 export type Repository = {
   id: string; //ドキュメントID
   repoName: string; //リポジトリ名
+  projectName: string; //プロジェクト名
   summery: string; //システム概要
   featureList: string[]; //機能概要リスト
   techStack: string[]; //使用技術スタック

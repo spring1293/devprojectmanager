@@ -5,7 +5,7 @@ import {
   createInitialStructure,
 } from "@/lib/github";
 import { sendMail } from "@/lib/gmail";
-import { saveBranch } from "@/lib/firestore";
+import { saveRepository, saveBranch } from "@/lib/firestore";
 import type { Branch } from "@/types/branch";
 import type { Feature } from "@/types/feature";
 import type { TechStack } from "@/lib/templates";
@@ -17,17 +17,19 @@ export async function POST(req: NextRequest) {
   try {
     const {
       repoName,
+      projectName,
       branches,
       features,
       techStack,
     }: {
       repoName: string;
+      projectName: string;
       branches: Branch[];
       features: Feature[];
       techStack: TechStack;
     } = await req.json();
 
-    if (!repoName || !branches || branches.length === 0) {
+    if (!repoName || !projectName || !branches || branches.length === 0) {
       return NextResponse.json(
         { error: "リポジトリ名とブランチ情報が必要です" },
         { status: 400 },
@@ -39,6 +41,18 @@ export async function POST(req: NextRequest) {
 
     //技術スタックに対応するフォルダ構成をpushする
     await createInitialStructure(fullRepoName, techStack);
+
+    //リポジトリ情報を保存
+    await saveRepository({
+      repoName: fullRepoName, //"owner/repo"形式
+      projectName, //ユーザーが入力したプロジェクト名
+      summery: "", //今はからで保存
+      featureList: features.map((f) => f.title),
+      techStack: [techStack],
+      isNew: true,
+      requirementsText: "",
+      embeddingVector: [],
+    });
 
     //各ブランチを作成し、担当者にメールを送信
     await Promise.allSettled(

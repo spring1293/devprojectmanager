@@ -3,6 +3,7 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { Repository } from "@/types/repository";
 import type { Branch } from "@/types/branch";
 import type { Feature } from "@/types/feature";
+import type { Inquiry } from "@/types/inquiry";
 
 //Firebase Adminの初期化、Firestoreクライアントをエクスポート(関数化した)
 function getDB() {
@@ -123,4 +124,19 @@ export async function updateBranchReview(
   await getDB().collection("branches").doc(branchId).update({
     lastReview: reviewResult,
   });
+}
+
+//問い合わせをFirestoreに保存する
+export async function saveInquiry(data: Omit<Inquiry, "id">): Promise<string> {
+  const docRef = await getDB().collection("inquiries").add(data);
+  return docRef.id;
+}
+
+//IDでリポジトリ情報を1件取得する(問い合わせAPI用)
+export async function getRepositoryById(
+  id: string,
+): Promise<Repository | null> {
+  const doc = await getDB().collection("repositories").doc(id).get();
+  if (!doc.exists) return null;
+  return { id: doc.id, ...doc.data() } as Repository;
 }

@@ -18,6 +18,7 @@ export default function BranchesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [techStack, setTechStack] = useState<TechStack>("unknown");
+  const [projectName, setProjectName] = useState("");
   const router = useRouter();
 
   //処理開始。loading中orエラー発生を確認
@@ -45,6 +46,10 @@ export default function BranchesPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ features: confirmedFeatures }),
         });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error ?? "ブランチ設計の生成に失敗しました");
+        }
         const data = await res.json();
         setBranches(data.branches ?? []);
       } catch (e) {
@@ -116,6 +121,15 @@ export default function BranchesPage() {
         ))}
       </ul>
 
+      {/* プロジェクト名を入力 */}
+      <input
+        type="text"
+        placeholder="プロジェクト名(例:メモアプリ)"
+        className="w-full border rounded px-3 py-2 mb-4"
+        value={projectName}
+        onChange={(e) => setProjectName(e.target.value)}
+      />
+
       {/* リポジトリ名入力 */}
       <input
         type="text"
@@ -146,14 +160,22 @@ export default function BranchesPage() {
       {/* 確定ボタン */}
       <button
         className="px-5 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-        disabled={submitting || !repoName || branches.length === 0}
+        disabled={
+          submitting || !repoName || !projectName || branches.length === 0
+        }
         onClick={async () => {
           setSubmitting(true);
           try {
             const res = await fetch("/api/create-repo", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ repoName, branches, features, techStack }),
+              body: JSON.stringify({
+                repoName,
+                projectName,
+                branches,
+                features,
+                techStack,
+              }),
             });
             const data = await res.json();
             //作成したリポジトリ名をlocalStorageに保存して次フェーズへ
