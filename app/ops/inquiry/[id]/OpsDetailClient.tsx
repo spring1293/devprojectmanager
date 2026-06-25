@@ -8,6 +8,7 @@ const CATEGORY_LABEL: Record<InquiryCategory, string> = {
   question: "質問",
   bug: "バグ",
   feature: "機能要望",
+  unclassified: "未分類",
 };
 
 const STATUS_LABEL: Record<InquiryStatus, string> = {
@@ -40,6 +41,61 @@ export default function OpsDetailClient({
       alert(String(e));
     } finally {
       setSaving(false);
+    }
+  };
+
+  //AI分類とembedding生成を再度処理する
+  //embeddingが利用可能かを管理するstate
+  const [embeddingReady, setEmbeddingReady] = useState(
+    Array.isArray(initial.embeddingVector) &&
+      initial.embeddingVector.length > 0,
+  );
+
+  const retryAI = async (action: "classify" | "embed") => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/inquiry/${inquiry.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "処理に失敗しました");
+      }
+      const data = await res.json();
+      if (action === "classify") {
+        setInquiry((prev) => ({ ...prev, aiCategory: data.aiCategory }));
+      }
+      if (action === "embed") {
+        setEmbeddingReady(true);
+      }
+    } catch (e) {
+      alert(String(e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  //類似ケースUI用
+  const [similar, setSimilar] = useState<Inquiry[]>([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
+  const [similarFilter, setSimilarFilter] = useState<InquiryStatus | "all">(
+    "all",
+  );
+  const [similarLoaded, setSimilarLoaded] = useState(false);
+
+  const loadSimilar = async () => {
+    setLoadingSimilar(true);
+    try {
+      const res = await fetch(`/api/inquiry/${inquiry.id}`);
+      const data = await res.json();
+      setSimilar(data.similar ?? []);
+      setSimilarLoaded(true);
+    } catch {
+      alert("類似ケースの取得に失敗しました");
+    } finally {
+      setLoadingSimilar(false);
     }
   };
 
@@ -138,6 +194,116 @@ export default function OpsDetailClient({
               メモを保存
             </button>
           </div>
+
+          {/* 類似ケース */}
+          <div
+            className="rounded-xl p-5"
+            style={{
+              boxShadow:
+                "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)",
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[11px] font-semibold text-[#a1a1a6] tracking-wide m-0">
+                類似ケース
+              </p>
+              {!similarLoaded && (
+                <button
+                  onClick={loadSimilar}
+                  disabled={loadingSimilar}
+                  className="px-3 h-7 rounded-lg text-[12px] font-semibold border-none cursor-pointer disabled:opacity-40"
+                  style={{ background: "rgba(0,0,0,.07)", color: "#3a3a3c" }}
+                >
+                  {loadingSimilar ? "検索中..." : "検索する"}
+                </button>
+              )}
+            </div>
+
+            {similarLoaded && (
+              <>
+                {/* ステータスフィルター */}
+                <div className="flex gap-1.5 mb-3">
+                  {(["all", "open", "in_progress", "resolved"] as const).map(
+                    (s) => (
+                      <button
+                        key={s}
+                        onClick={() => setSimilarFilter(s)}
+                        className="px-2.5 h-6 rounded-full text-[11px] font-semibold border-none cursor-pointer"
+                        style={
+                          similarFilter === s
+                            ? { background: "#0a84ff", color: "#fff" }
+                            : {
+                                background: "rgba(0,0,0,.06)",
+                                color: "#3a3a3c",
+                              }
+                        }
+                      >
+                        {s === "all"
+                          ? "すべて"
+                          : STATUS_LABEL[s as InquiryStatus]}
+                      </button>
+                    ),
+                  )}
+                </div>
+
+                {/* 結果リスト */}
+                {(() => {
+                  const filtered =
+                    similarFilter === "all"
+                      ? similar
+                      : similar.filter((s) => s.status === similarFilter);
+                  return filtered.length === 0 ? (
+                    <p className="text-[13px] text-[#a1a1a6] m-0">該当なし</p>
+                  ) : (
+                    <ul className="m-0 p-0 list-none flex flex-col gap-2">
+                      {filtered.map((s) => (
+                        <li
+                          key={s.id}
+                          className="rounded-lg p-3 cursor-pointer hover:opacity-80"
+                          style={{
+                            background: "#fafafb",
+                            border: ".5px solid rgba(0,0,0,.07)",
+                          }}
+                          onClick={() =>
+                            window.open(`/ops/inquiry/${s.id}`, "_blank")
+                          }
+                        >
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span
+                              className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                              style={{
+                                background: "#f2f2f4",
+                                color: "#6e6e73",
+                              }}
+                            >
+                              {STATUS_LABEL[s.status]}
+                            </span>
+                            <span
+                              className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+                              style={{
+                                background: "#f2f2f4",
+                                color: "#6e6e73",
+                              }}
+                            >
+                              {CATEGORY_LABEL[s.aiCategory]}
+                            </span>
+                          </div>
+                          <p className="text-[12.5px] font-semibold text-[#1d1d1f] m-0 mb-0.5">
+                            {s.title}
+                          </p>
+                          {s.resolvedNote && (
+                            <p className="text-[11.5px] text-[#6e6e73] m-0 line-clamp-2">
+                              対応: {s.resolvedNote}
+                            </p>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                })()}
+              </>
+            )}
+          </div>
         </div>
 
         {/* 右：分類・アクション */}
@@ -153,12 +319,58 @@ export default function OpsDetailClient({
             <p className="text-[11px] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">
               AI仮分類
             </p>
-            <span
-              className="px-2 py-0.5 rounded-md text-[11px] font-semibold"
-              style={{ background: "#f2f2f4", color: "#6e6e73" }}
-            >
-              {CATEGORY_LABEL[inquiry.aiCategory]}
-            </span>
+            <div className="flex items-center justify-between">
+              <span
+                className="px-2 py-0.5 rounded-md text-[11px] font-semibold"
+                style={{ background: "#f2f2f4", color: "#6e6e73" }}
+              >
+                {CATEGORY_LABEL[inquiry.aiCategory]}
+              </span>
+              {inquiry.aiCategory === "unclassified" && (
+                <button
+                  onClick={() => retryAI("classify")}
+                  disabled={saving}
+                  className="px-3 h-7 rounded-lg text-[12px] font-semibold border-none cursor-pointer disabled:opacity-40"
+                  style={{
+                    background: "rgba(10,132,255,.10)",
+                    color: "#0a6fe0",
+                  }}
+                >
+                  再判定する
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Embedding状態 */}
+          <div
+            className="rounded-xl p-5"
+            style={{
+              boxShadow:
+                "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)",
+            }}
+          >
+            <p className="text-[11px] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">
+              類似検索用データ
+            </p>
+            <div className="flex items-center justify-between">
+              <span
+                className={`text-[12.5px] font-semibold ${embeddingReady ? "text-[#30a14e]" : "text-[#a1a1a6]"}`}
+              >
+                {embeddingReady ? "生成済み" : "未生成"}
+              </span>
+              <button
+                onClick={() => retryAI("embed")}
+                disabled={saving}
+                className="px-3 h-7 rounded-lg text-[12px] font-semibold border-none cursor-pointer disabled:opacity-40"
+                style={{
+                  background: "rgba(10,132,255,.10)",
+                  color: "#0a6fe0",
+                }}
+              >
+                生成する
+              </button>
+            </div>
           </div>
 
           {/* 分類確定 */}

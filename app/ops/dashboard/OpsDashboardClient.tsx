@@ -14,6 +14,7 @@ const CATEGORY_LABEL: Record<InquiryCategory, string> = {
   question: "質問",
   bug: "バグ",
   feature: "機能要望",
+  unclassified: "未分類",
 };
 
 const STATUS_COLOR: Record<InquiryStatus, string> = {

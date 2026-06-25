@@ -22,6 +22,20 @@ function getDB() {
   return getFirestore();
 }
 
+//共通のヘルパー関数を追加
+function toPlainInquiry(doc: FirebaseFirestore.DocumentSnapshot): Inquiry {
+  const data = doc.data()!;
+  const ev = data.embeddingVector;
+  return {
+    id: doc.id,
+    ...data,
+    embeddingVector:
+      ev && typeof ev === "object" && typeof ev.toArray === "function"
+        ? ev.toArray()
+        : (ev ?? []),
+  } as Inquiry;
+}
+
 //repositoriesコレクションの全データを取得する
 export async function getRepositories(): Promise<Repository[]> {
   const snapshot = await getDB().collection("repositories").get();
@@ -128,7 +142,14 @@ export async function updateBranchReview(
 
 //問い合わせをFirestoreに保存する
 export async function saveInquiry(data: Omit<Inquiry, "id">): Promise<string> {
-  const docRef = await getDB().collection("inquiries").add(data);
+  const docRef = await getDB()
+    .collection("inquiries")
+    .add({
+      ...data,
+      embeddingVector: Array.isArray(data.embeddingVector)
+        ? FieldValue.vector(data.embeddingVector)
+        : data.embeddingVector,
+    });
   return docRef.id;
 }
 
@@ -147,23 +168,59 @@ export async function getInquiries(): Promise<Inquiry[]> {
     .collection("inquiries")
     .orderBy("createdAt", "desc")
     .get();
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Inquiry[];
+  return snapshot.docs.map((doc) => toPlainInquiry(doc));
 }
 
 //IDで問い合わせ1件分を取得する
 export async function getInquiryById(id: string): Promise<Inquiry | null> {
   const doc = await getDB().collection("inquiries").doc(id).get();
   if (!doc.exists) return null;
-  return { id: doc.id, ...doc.data() } as Inquiry;
+  return toPlainInquiry(doc);
 }
 
 //問い合わせのカテゴリ・ステータス・対応メモを更新
 export async function updateInquiry(
   id: string,
-  data: Partial<Pick<Inquiry, "confirmedCategory" | "status" | "resolvedNote">>,
+  data: Partial<
+    Pick<
+      Inquiry,
+      | "confirmedCategory"
+      | "status"
+      | "resolvedNote"
+      | "aiCategory"
+      | "embeddingVector"
+    >
+  >,
 ): Promise<void> {
-  await getDB().collection("inquiries").doc(id).update(data);
+  const updateData = { ...data };
+  if (Array.isArray(updateData.embeddingVector)) {
+    updateData.embeddingVector = FieldValue.vector(updateData.embeddingVector);
+  }
+  await getDB().collection("inquiries").doc(id).update(updateData);
+}
+
+//類似問い合わせをベクトル検索する
+export async function searchSimilarInquiries(
+  queryVector: number[],
+  excludeId: string,
+  category?: string,
+  limit: number = 5,
+): Promise<Inquiry[]> {
+  const vectorQuery = getDB()
+    .collection("inquiries")
+    .findNearest({
+      vectorField: "embeddingVector",
+      queryVector: FieldValue.vector(queryVector),
+      limit: limit + 1, //自分自身が含まれる場合に添えて1件多く取得
+      distanceMeasure: "COSINE",
+    });
+  const snapshot = await vectorQuery.get();
+  return snapshot.docs
+    .map((doc) => ({ id: doc.id, ...doc.data() }) as Inquiry)
+    .filter((doc) => doc.id !== excludeId) //自分自身を除外
+    .filter(
+      (doc) =>
+        !category || (doc.confirmedCategory ?? doc.aiCategory) === category,
+    ) //同一カテゴリから検索。確定カテゴリ優先
+    .slice(0, limit);
 }

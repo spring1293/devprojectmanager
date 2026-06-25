@@ -37,14 +37,37 @@ export async function analyzeRequirements(text: string): Promise<{
   return JSON.parse(jsonMatch[0]);
 }
 
-//テキストをベクトル変換する
-export async function generateEmbedding(text: string): Promise<number[]> {
+//テキストをベクトル変換する(直接呼び出しVer)
+export async function generateEmbeddingOld(text: string): Promise<number[]> {
   const result = await getAI().models.embedContent({
-    model: "text-embedding-004",
+    model: "gemini-embedding-001",
     contents: text,
+    config: { outputDimesionality: 768 },
   });
 
   return result.embeddings?.[0]?.values ?? [];
+}
+
+//テキストをベクトル変換する(REST APIで次元数を明示指定)
+export async function generateEmbedding(text: string): Promise<number[]> {
+  const apiKey = process.env.GEMINI_API_KEY!;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${apiKey}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "models/gemini-embedding-001",
+      content: { parts: [{ text }] },
+      outputDimensionality: 768,
+      taskType: "SEMANTIC_SIMILARITY", //ベクトルの意味的類似度最適化
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`embedding APIエラー:${err}`);
+  }
+  const data = await res.json();
+  return data.embedding?.values ?? [];
 }
 
 //要件定義書から機能要件の叩き台を抽出する。

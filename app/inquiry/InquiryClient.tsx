@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import type { Repository } from "@/types/repository";
 
 export default function InquiryClient({
@@ -9,7 +8,6 @@ export default function InquiryClient({
 }: {
   repositories: Repository[];
 }) {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [title, setTitle] = useState("");
@@ -57,11 +55,18 @@ export default function InquiryClient({
             お問い合わせを受け付けました。
           </p>
           <button
-            onClick={() => router.push("/")}
+            onClick={() => {
+              setDone(false);
+              setName("");
+              setEmail("");
+              setTitle("");
+              setBody("");
+              setRepoId("");
+            }}
             className="text-[13px] text-[#0a6fe0] hover:opacity-70"
             style={{ background: "none", border: "none", cursor: "pointer" }}
           >
-            トップに戻る
+            お問い合わせに戻る
           </button>
         </div>
       </div>
