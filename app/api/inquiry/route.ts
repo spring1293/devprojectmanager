@@ -57,9 +57,13 @@ export async function POST(req: NextRequest) {
       aiCategory,
       confirmedCategory: null,
       status: "open",
+      priority: "medium", //重要度
+      assignee: "", //担当者
+      dueDate: null, //回答期日
       suggestedAnswer,
       resolvedNote: "",
       createdAt: new Date().toISOString(),
+      resolvedAt: null,
       embeddingVector,
     });
     return NextResponse.json({ id, aiCategory });

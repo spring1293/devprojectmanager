@@ -15,11 +15,25 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params; //awaitしてidを取り出す
-    const { confirmedCategory, status, resolvedNote } = await req.json();
+    const {
+      confirmedCategory,
+      status,
+      resolvedNote,
+      priority,
+      assignee,
+      dueDate,
+    } = await req.json();
+    //statusがresolvedになるタイミングでresolvedAtを記録
+    const resolvedAt =
+      status === "resolved" ? new Date().toISOString() : undefined;
     await updateInquiry(id, {
       ...(confirmedCategory !== undefined && { confirmedCategory }),
       ...(status !== undefined && { status }),
       ...(resolvedNote !== undefined && { resolvedNote }),
+      ...(priority !== undefined && { priority }),
+      ...(assignee !== undefined && { assignee }),
+      ...(dueDate !== undefined && { dueDate }),
+      ...(resolvedAt !== undefined && { resolvedAt }),
     });
     return NextResponse.json({ ok: true });
   } catch (error) {

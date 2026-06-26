@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Branch } from "@/types/branch";
 import type { Feature } from "@/types/feature";
-import type { Inquiry } from "@/types/inquiry";
+import type { Inquiry, InquiryStatus } from "@/types/inquiry";
 import type { Repository } from "@/types/repository";
-import OpsDashboardClient from "@/app/ops/dashboard/OpsDashboardClient";
+import InquiryKanban from "@/app/dashboard/InquiryKanban";
+import InquiryGraph from "@/app/dashboard/InquiryGraph";
+import OpsDetailClient from "@/app/ops/inquiry/[id]/OpsDetailClient";
 
 type BranchWithMeta = Branch & {
   fullRepoName: string;
@@ -25,6 +27,9 @@ export default function DashboardClient({
 }) {
   const [tab, setTab] = useState<"branches" | "inquiries">("branches");
   const [inquiryFilter, setInquiryFilter] = useState<"repo" | "all">("repo");
+  const [inquiryView, setInquiryView] = useState<"kanban" | "graph">("kanban");
+  const [inquiryList, setInquiryList] = useState(inquiries);
+  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const router = useRouter();
 
   const repoMap = branches.reduce<Record<string, BranchWithMeta[]>>(
@@ -48,10 +53,24 @@ export default function DashboardClient({
   // フィルタに応じて問い合わせを絞り込む
   const filteredInquiries =
     inquiryFilter === "all"
-      ? inquiries
+      ? inquiryList
       : selectedRepoId
-        ? inquiries.filter((i) => i.repoId === selectedRepoId)
+        ? inquiryList.filter((i) => i.repoId === selectedRepoId)
         : [];
+
+  //ステータス変更ハンドラを追加
+  const handleStatusChange = async (id: string, status: InquiryStatus) => {
+    const res = await fetch(`/api/inquiry/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) {
+      setInquiryList((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, status } : i)),
+      );
+    }
+  };
 
   // タブUI共通スタイル
   const tabStyle = (active: boolean) => ({
@@ -249,41 +268,114 @@ export default function DashboardClient({
         {/* 問い合わせタブ */}
         {tab === "inquiries" && (
           <div className="flex-1 overflow-hidden flex flex-col">
-            {/* フィルタトグル */}
+            {/* フィルタ + ビュー切替 */}
             <div
-              className="flex-none flex gap-2 px-7 py-3"
+              className="flex-none flex items-center justify-between px-7 py-3"
               style={{ borderBottom: ".5px solid rgba(0,0,0,.06)" }}
             >
-              <button
-                onClick={() => setInquiryFilter("repo")}
-                className="px-3 h-7 rounded-full text-[11px] font-semibold border-none cursor-pointer"
-                style={
-                  inquiryFilter === "repo"
-                    ? { background: "#0a84ff", color: "#fff" }
-                    : { background: "rgba(0,0,0,.06)", color: "#3a3a3c" }
-                }
-              >
-                {selectedRepo.split("/")[1] ?? "このリポジトリ"}
-              </button>
-              <button
-                onClick={() => setInquiryFilter("all")}
-                className="px-3 h-7 rounded-full text-[11px] font-semibold border-none cursor-pointer"
-                style={
-                  inquiryFilter === "all"
-                    ? { background: "#0a84ff", color: "#fff" }
-                    : { background: "rgba(0,0,0,.06)", color: "#3a3a3c" }
-                }
-              >
-                すべて
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setInquiryFilter("repo")}
+                  className="px-3 h-7 rounded-full text-[11px] font-semibold border-none cursor-pointer"
+                  style={
+                    inquiryFilter === "repo"
+                      ? { background: "#0a84ff", color: "#fff" }
+                      : { background: "rgba(0,0,0,.06)", color: "#3a3a3c" }
+                  }
+                >
+                  {selectedRepo.split("/")[1] ?? "このリポジトリ"}
+                </button>
+                <button
+                  onClick={() => setInquiryFilter("all")}
+                  className="px-3 h-7 rounded-full text-[11px] font-semibold border-none cursor-pointer"
+                  style={
+                    inquiryFilter === "all"
+                      ? { background: "#0a84ff", color: "#fff" }
+                      : { background: "rgba(0,0,0,.06)", color: "#3a3a3c" }
+                  }
+                >
+                  すべて
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setInquiryView("kanban")}
+                  className="px-3 h-7 rounded-full text-[11px] font-semibold border-none cursor-pointer"
+                  style={
+                    inquiryView === "kanban"
+                      ? { background: "#0a84ff", color: "#fff" }
+                      : { background: "rgba(0,0,0,.06)", color: "#3a3a3c" }
+                  }
+                >
+                  カンバン
+                </button>
+                <button
+                  onClick={() => setInquiryView("graph")}
+                  className="px-3 h-7 rounded-full text-[11px] font-semibold border-none cursor-pointer"
+                  style={
+                    inquiryView === "graph"
+                      ? { background: "#0a84ff", color: "#fff" }
+                      : { background: "rgba(0,0,0,.06)", color: "#3a3a3c" }
+                  }
+                >
+                  グラフ
+                </button>
+              </div>
             </div>
-            {/* 問い合わせ一覧 */}
+
+            {/* カンバン or グラフ */}
             <div className="flex-1 overflow-y-auto">
-              <OpsDashboardClient inquiries={filteredInquiries} />
+              {inquiryView === "kanban" ? (
+                <InquiryKanban
+                  inquiries={filteredInquiries}
+                  onCardClick={(inquiry) => setSelectedInquiry(inquiry)}
+                  onStatusChange={handleStatusChange}
+                />
+              ) : (
+                <InquiryGraph inquiries={filteredInquiries} />
+              )}
             </div>
           </div>
         )}
       </div>
+      {/* 問い合わせ詳細モーダル */}
+      {selectedInquiry && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto"
+          style={{ background: "rgba(0,0,0,.45)" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedInquiry(null);
+          }}
+        >
+          <div
+            className="relative bg-white rounded-2xl my-8 mx-auto w-full max-w-4xl"
+            style={{ boxShadow: "0 20px 60px rgba(0,0,0,.25)" }}
+          >
+            <button
+              onClick={() => setSelectedInquiry(null)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70 z-10"
+              style={{
+                background: "rgba(0,0,0,.07)",
+                border: "none",
+                cursor: "pointer",
+                fontSize: 16,
+                color: "#6e6e73",
+              }}
+            >
+              ✕
+            </button>
+            <OpsDetailClient
+              inquiry={selectedInquiry}
+              onClose={() => setSelectedInquiry(null)}
+              onUpdate={(updated) =>
+                setInquiryList((prev) =>
+                  prev.map((i) => (i.id === updated.id ? updated : i)),
+                )
+              }
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

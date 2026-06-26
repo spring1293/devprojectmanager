@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import type { Inquiry, InquiryStatus, InquiryCategory } from "@/types/inquiry";
+import OpsDetailClient from "@/app/ops/inquiry/[id]/OpsDetailClient";
 
 const STATUS_LABEL: Record<InquiryStatus, string> = {
   open: "未対応",
@@ -28,7 +28,7 @@ export default function OpsDashboardClient({
 }: {
   inquiries: Inquiry[];
 }) {
-  const router = useRouter();
+  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [filterStatus, setFilterStatus] = useState<InquiryStatus | "all">(
     "all",
   );
@@ -87,7 +87,7 @@ export default function OpsDashboardClient({
           filtered.map((inquiry) => (
             <div
               key={inquiry.id}
-              onClick={() => router.push(`/ops/inquiry/${inquiry.id}`)}
+              onClick={() => setSelectedInquiry(inquiry)}
               className="rounded-xl p-5 cursor-pointer hover:opacity-80"
               style={{
                 boxShadow:
@@ -135,6 +135,40 @@ export default function OpsDashboardClient({
           ))
         )}
       </div>
+      {/* 問い合わせ詳細モーダル */}
+      {selectedInquiry && (
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto"
+          style={{ background: "rgba(0,0,0,.45)" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedInquiry(null);
+          }}
+        >
+          <div
+            className="relative bg-white rounded-2xl my-8 mx-auto w-full max-w-4xl"
+            style={{ boxShadow: "0 20px 60px rgba(0,0,0,.25)" }}
+          >
+            {/* 閉じるボタン */}
+            <button
+              onClick={() => setSelectedInquiry(null)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center hover:opacity-70 z-10"
+              style={{
+                background: "rgba(0,0,0,.07)",
+                border: "none",
+                cursor: "pointer",
+                fontSize: 16,
+                color: "#6e6e73",
+              }}
+            >
+              ✕
+            </button>
+            <OpsDetailClient
+              inquiry={selectedInquiry}
+              onClose={() => setSelectedInquiry(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

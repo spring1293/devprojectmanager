@@ -2,13 +2,32 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Inquiry, InquiryCategory, InquiryStatus } from "@/types/inquiry";
+import type {
+  Inquiry,
+  InquiryCategory,
+  InquiryStatus,
+  InquiryPriority,
+} from "@/types/inquiry";
 
 const CATEGORY_LABEL: Record<InquiryCategory, string> = {
   question: "質問",
   bug: "バグ",
   feature: "機能要望",
   unclassified: "未分類",
+};
+
+const PRIORITY_LABEL: Record<InquiryPriority, string> = {
+  critical: "緊急",
+  high: "大",
+  medium: "中",
+  low: "小",
+};
+
+const PRIORITY_COLOR: Record<InquiryPriority, string> = {
+  critical: "#ff3b30",
+  high: "#ff9500",
+  medium: "#0a84ff",
+  low: "#8a8a8e",
 };
 
 const STATUS_LABEL: Record<InquiryStatus, string> = {
@@ -19,12 +38,20 @@ const STATUS_LABEL: Record<InquiryStatus, string> = {
 
 export default function OpsDetailClient({
   inquiry: initial,
+  onClose,
+  onUpdate,
 }: {
   inquiry: Inquiry;
+  onClose?: () => void; //モーダル用。未指定の場合はページ遷移
+  onUpdate?: (updated: Inquiry) => void; //最新状態に更新
 }) {
   const router = useRouter();
   const [inquiry, setInquiry] = useState(initial);
   const [resolvedNote, setResolvedNote] = useState(initial.resolvedNote);
+  const [assignee, setAssignee] = useState(initial.assignee ?? "");
+  const [dueDate, setDueDate] = useState<string | null>(
+    initial.dueDate ?? null,
+  );
   const [saving, setSaving] = useState(false);
 
   const patch = async (data: Partial<Inquiry>) => {
@@ -36,7 +63,11 @@ export default function OpsDetailClient({
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error("更新に失敗しました");
-      setInquiry((prev) => ({ ...prev, ...data }));
+      //変更前:setInquriy((prev) => ({...prev, ...data}));
+      //変更後: updatedを作ってからonUpdateも呼ぶ
+      const updated = { ...inquiry, ...data };
+      setInquiry(updated);
+      onUpdate?.(updated);
     } catch (e) {
       alert(String(e));
     } finally {
@@ -107,7 +138,7 @@ export default function OpsDetailClient({
         style={{ borderBottom: ".5px solid rgba(0,0,0,.09)" }}
       >
         <button
-          onClick={() => router.push("/ops/dashboard")}
+          onClick={() => (onClose ? onClose() : router.push("/ops/dashboard"))}
           className="text-[13px] text-[#0a6fe0] mb-3 flex items-center gap-1 hover:opacity-70"
           style={{
             background: "none",
@@ -403,6 +434,95 @@ export default function OpsDetailClient({
                 ),
               )}
             </div>
+          </div>
+
+          {/* 重要度 */}
+          <div
+            className="rounded-xl p-5"
+            style={{
+              boxShadow:
+                "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)",
+            }}
+          >
+            <p className="text-[11px] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">
+              重要度
+            </p>
+            <div className="flex flex-col gap-2">
+              {(["critical", "high", "medium", "low"] as InquiryPriority[]).map(
+                (p) => (
+                  <button
+                    key={p}
+                    onClick={() => patch({ priority: p })}
+                    disabled={saving}
+                    className="h-9 rounded-lg text-[13px] font-semibold border-none cursor-pointer disabled:opacity-40"
+                    style={
+                      (inquiry.priority ?? "medium") === p
+                        ? { background: PRIORITY_COLOR[p], color: "#fff" }
+                        : { background: "rgba(0,0,0,.06)", color: "#3a3a3c" }
+                    }
+                  >
+                    {PRIORITY_LABEL[p]}
+                  </button>
+                ),
+              )}
+            </div>
+          </div>
+
+          {/* 担当者 */}
+          <div
+            className="rounded-xl p-5"
+            style={{
+              boxShadow:
+                "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)",
+            }}
+          >
+            <p className="text-[11px] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">
+              担当者
+            </p>
+            <input
+              type="text"
+              value={assignee}
+              onChange={(e) => setAssignee(e.target.value)}
+              placeholder="担当者名を入力"
+              className="w-full h-9 px-3 rounded-lg text-[13px] text-[#1d1d1f] outline-none"
+              style={{ border: ".5px solid rgba(0,0,0,.18)" }}
+            />
+            <button
+              onClick={() => patch({ assignee })}
+              disabled={saving}
+              className="mt-2 w-full h-8 rounded-lg text-[12.5px] font-semibold border-none cursor-pointer disabled:opacity-40"
+              style={{ background: "rgba(0,0,0,.07)", color: "#3a3a3c" }}
+            >
+              保存
+            </button>
+          </div>
+
+          {/* 対応完了予定日 */}
+          <div
+            className="rounded-xl p-5"
+            style={{
+              boxShadow:
+                "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)",
+            }}
+          >
+            <p className="text-[11px] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">
+              対応完了予定日
+            </p>
+            <input
+              type="date"
+              value={dueDate ?? ""}
+              onChange={(e) => setDueDate(e.target.value || null)}
+              className="w-full h-9 px-3 rounded-lg text-[13px] text-[#1d1d1f] outline-none"
+              style={{ border: ".5px solid rgba(0,0,0,.18)" }}
+            />
+            <button
+              onClick={() => patch({ dueDate })}
+              disabled={saving}
+              className="mt-2 w-full h-8 rounded-lg text-[12.5px] font-semibold border-none cursor-pointer disabled:opacity-40"
+              style={{ background: "rgba(0,0,0,.07)", color: "#3a3a3c" }}
+            >
+              保存
+            </button>
           </div>
 
           {/* ステータス更新 */}
