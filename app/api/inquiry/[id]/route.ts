@@ -22,6 +22,7 @@ export async function PATCH(
       priority,
       assignee,
       dueDate,
+      branchId,
     } = await req.json();
     //statusがresolvedになるタイミングでresolvedAtを記録
     const resolvedAt =
@@ -34,6 +35,7 @@ export async function PATCH(
       ...(assignee !== undefined && { assignee }),
       ...(dueDate !== undefined && { dueDate }),
       ...(resolvedAt !== undefined && { resolvedAt }),
+      ...(branchId !== undefined && { branchId }),
     });
     return NextResponse.json({ ok: true });
   } catch (error) {

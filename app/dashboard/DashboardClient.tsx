@@ -9,6 +9,7 @@ import type { Repository } from "@/types/repository";
 import InquiryKanban from "@/app/dashboard/InquiryKanban";
 import InquiryGraph from "@/app/dashboard/InquiryGraph";
 import OpsDetailClient from "@/app/ops/inquiry/[id]/OpsDetailClient";
+import BranchOperationModal from "@/app/dashboard/BranchOperationModal";
 
 type BranchWithMeta = Branch & {
   fullRepoName: string;
@@ -30,6 +31,11 @@ export default function DashboardClient({
   const [inquiryView, setInquiryView] = useState<"kanban" | "graph">("kanban");
   const [inquiryList, setInquiryList] = useState(inquiries);
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
+  const [selectedBranchOpInquiry, setSelectedBranchOpInquiry] =
+    useState<Inquiry | null>(null);
+  const [localBranchNames, setLocalBranchNames] = useState<
+    Record<string, string>
+  >({});
   const router = useRouter();
 
   const repoMap = branches.reduce<Record<string, BranchWithMeta[]>>(
@@ -40,6 +46,19 @@ export default function DashboardClient({
     },
     {},
   );
+
+  const branchOptions = branches.map((b) => ({
+    id: b.id,
+    branchName: b.branchName,
+    fullRepoName: b.fullRepoName,
+    inquiryCount: inquiryList.filter((i) => i.branchId === b.id).length,
+  }));
+
+  //サーバーデータ+新規作成ブランチを統合したID→名前マップ
+  const branchMap: Record<string, string> = {
+    ...Object.fromEntries(branchOptions.map((b) => [b.id, b.branchName])),
+    ...localBranchNames,
+  };
 
   const repoList = Object.keys(repoMap);
   const [selectedRepo, setSelectedRepo] = useState(repoList[0] ?? "");
@@ -330,6 +349,8 @@ export default function DashboardClient({
                   inquiries={filteredInquiries}
                   onCardClick={(inquiry) => setSelectedInquiry(inquiry)}
                   onStatusChange={handleStatusChange}
+                  onBranchOp={(inquiry) => setSelectedBranchOpInquiry(inquiry)}
+                  branchMap={branchMap}
                 />
               ) : (
                 <InquiryGraph inquiries={filteredInquiries} />
@@ -375,6 +396,27 @@ export default function DashboardClient({
             />
           </div>
         </div>
+      )}
+      {/*ブランチ操作モーダル */}
+      {selectedBranchOpInquiry && (
+        <BranchOperationModal
+          inquiry={selectedBranchOpInquiry}
+          branches={branchOptions}
+          onClose={() => setSelectedBranchOpInquiry(null)}
+          onBranchCreated={(branchId, branchName) => {
+            setLocalBranchNames((prev) => ({
+              ...prev,
+              [branchId]: branchName,
+            }));
+            // 問い合わせリストのbranchIdをリアルタイム更新
+            setInquiryList((prev) =>
+              prev.map((i) =>
+                i.id === selectedBranchOpInquiry.id ? { ...i, branchId } : i,
+              ),
+            );
+            setSelectedBranchOpInquiry(null);
+          }}
+        />
       )}
     </div>
   );

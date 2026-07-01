@@ -74,10 +74,14 @@ export default function InquiryKanban({
   inquiries,
   onCardClick,
   onStatusChange,
+  onBranchOp,
+  branchMap,
 }: {
   inquiries: Inquiry[];
   onCardClick: (inquiry: Inquiry) => void;
   onStatusChange: (id: string, status: InquiryStatus) => Promise<void>;
+  onBranchOp: (inquiry: Inquiry) => void;
+  branchMap: Record<string, string>;
 }) {
   const [sortKey, setSortKey] = useState<"priority" | "dueDate" | "createdAt">(
     "priority",
@@ -210,6 +214,8 @@ export default function InquiryKanban({
             actionLabel="作業開始"
             actionStatus="in_progress"
             onStatusChange={handleStatusChange}
+            onBranchOp={onBranchOp}
+            branchMap={branchMap}
             changingId={changingId}
           />
 
@@ -222,6 +228,8 @@ export default function InquiryKanban({
             actionLabel="完了にする"
             actionStatus="resolved"
             onStatusChange={handleStatusChange}
+            onBranchOp={onBranchOp}
+            branchMap={branchMap}
             changingId={changingId}
           />
 
@@ -251,6 +259,8 @@ function KanbanColumn({
   actionLabel,
   actionStatus,
   onStatusChange,
+  onBranchOp,
+  branchMap,
   grayout = false,
   changingId,
 }: {
@@ -261,6 +271,8 @@ function KanbanColumn({
   actionLabel?: string;
   actionStatus?: InquiryStatus;
   onStatusChange?: (id: string, status: InquiryStatus) => void;
+  onBranchOp?: (inquiry: Inquiry) => void; //ブランチ作成オプション
+  branchMap?: Record<string, string>;
   grayout?: boolean;
   changingId: string | null;
 }) {
@@ -287,6 +299,8 @@ function KanbanColumn({
             actionLabel={actionLabel}
             actionStatus={actionStatus}
             onStatusChange={onStatusChange}
+            onBranchOp={onBranchOp}
+            branchMap={branchMap}
             grayout={grayout}
             isChanging={changingId === inquiry.id}
           />
@@ -306,6 +320,8 @@ function KanbanCard({
   actionLabel,
   actionStatus,
   onStatusChange,
+  onBranchOp,
+  branchMap,
   grayout = false,
   isChanging,
 }: {
@@ -314,6 +330,8 @@ function KanbanCard({
   actionLabel?: string;
   actionStatus?: InquiryStatus;
   onStatusChange?: (id: string, status: InquiryStatus) => void;
+  onBranchOp?: (inquiry: Inquiry) => void; //ブランチ作成オプション用
+  branchMap?: Record<string, string>;
   grayout?: boolean;
   isChanging: boolean;
 }) {
@@ -350,6 +368,24 @@ function KanbanCard({
             📅 {inquiry.dueDate}
           </span>
         )}
+        {/* メニューボタン */}
+        {onBranchOp && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onBranchOp(inquiry);
+            }}
+            className="ml-auto w-6 h-6 rounded flex items-center justify-center border-none cursor-pointer hover:opacity-70"
+            style={{
+              background: "rgba(0,0,0,.06)",
+              color: "#6e6e73",
+              fontSize: 13,
+            }}
+            title="ブランチ操作"
+          >
+            ...
+          </button>
+        )}
       </div>
 
       {/* タイトル */}
@@ -362,6 +398,16 @@ function KanbanCard({
         #{inquiry.id.slice(0, 6)}
         {inquiry.assignee ? ` · ${inquiry.assignee}` : ""}
       </p>
+
+      {/* ブランチ名バッジ */}
+      {inquiry.branchId && branchMap?.[inquiry.branchId] && (
+        <p
+          className="text-[10px] font-mono mb-3 truncate"
+          style={{ color: "#0a84ff" }}
+        >
+          🔗 {branchMap[inquiry.branchId]}
+        </p>
+      )}
 
       {/* アクションボタン */}
       {actionLabel && actionStatus && onStatusChange && (

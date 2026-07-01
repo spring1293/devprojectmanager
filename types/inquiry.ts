@@ -19,5 +19,6 @@ export type Inquiry = {
   resolvedNote: string; //解決時の対応メモ
   createdAt: string; //ISO 8601形式
   resolvedAt: string | null; //解決日時。ISO801形式。未解決はnull
+  branchId: string | null; //紐付けブランチのFirestoreID
   embeddingVector: number[] | string; //類似問い合わせ検索用。生成失敗を受け入れるためにstringも許容
 };

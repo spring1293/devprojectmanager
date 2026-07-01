@@ -153,6 +153,27 @@ export async function saveInquiry(data: Omit<Inquiry, "id">): Promise<string> {
   return docRef.id;
 }
 
+//問い合わせ起点でブランチを新規作成する(機能要件ブランチとは別系統)
+export async function createInquiryBranch(data: {
+  branchName: string;
+  fullRepoName: string;
+  branchType: "fix" | "feat" | "chore";
+  description: string;
+  assignee: string;
+  inquiryId: string;
+}): Promise<string> {
+  const docRef = await getDB()
+    .collection("branches")
+    .add({
+      ...data,
+      featureIds: [], //機能要件ベースのブランチと互換性のため空配列
+      features: [],
+      lastReview: "",
+      createdAt: new Date().toISOString(),
+    });
+  return docRef.id;
+}
+
 //IDでリポジトリ情報を1件取得する(問い合わせAPI用)
 export async function getRepositoryById(
   id: string,
@@ -187,6 +208,11 @@ export async function updateInquiry(
       | "confirmedCategory"
       | "status"
       | "resolvedNote"
+      | "priority"
+      | "assignee"
+      | "dueDate"
+      | "resolvedAt"
+      | "branchId"
       | "aiCategory"
       | "embeddingVector"
     >
