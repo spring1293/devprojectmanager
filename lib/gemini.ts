@@ -26,7 +26,7 @@ export async function analyzeRequirements(text: string): Promise<{
   `;
 
   const result = await getAI().models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-flash",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
 
@@ -90,7 +90,7 @@ export async function extractFeatures(text: string): Promise<Feature[]> {
     ]
   `;
   const result = await getAI().models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-flash",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
 
@@ -128,7 +128,7 @@ export async function designBranches(features: Feature[]): Promise<Branch[]> {
   `;
 
   const result = await getAI().models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-flash",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
 
@@ -168,7 +168,7 @@ export async function reviewCode(
   `;
 
   const result = await getAI().models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-flash",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
 
@@ -190,7 +190,7 @@ export async function detectTechStack(text: string): Promise<TechStack> {
   `;
 
   const result = await getAI().models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-flash",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
 
@@ -223,7 +223,7 @@ export async function classifyInquiry(
   `;
 
   const result = await getAI().models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-flash",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
 
@@ -250,7 +250,7 @@ export async function createSuggestedAnswer(
   `;
 
   const result = await getAI().models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-flash",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
 

@@ -73,7 +73,7 @@ export default function AnalyzePage() {
       >
         <button
           onClick={() => router.push("/dashboard")}
-          className="text-[13px] text-[#0a6fe0] mb-3 flex items-center gap-1 hover:opacity-70"
+          className="text-[var(--font-base)] text-[#0a6fe0] mb-3 flex items-center gap-1 hover:opacity-70"
           style={{
             background: "none",
             border: "none",
@@ -84,12 +84,12 @@ export default function AnalyzePage() {
           ←ダッシュボードに戻る
         </button>
         <h1
-          className="text-[22px] text-[#1d1d1f] m-0"
+          className="text-[var(--font-xl)] text-[#1d1d1f] m-0"
           style={{ fontWeight: 680, letterSpacing: "-.015em" }}
         >
           要件定義書 解析
         </h1>
-        <p className="text-[13px] text-[#6e6e73] mt-1 m-0">
+        <p className="text-[var(--font-base)] text-[#6e6e73] mt-1 m-0">
           システム要件を入力するか、「要件定義書.md」ファイルをドロップしてください。
         </p>
       </div>
@@ -125,7 +125,7 @@ export default function AnalyzePage() {
             {/* ドラッグ中のオーバーレイ */}
             {isDragging && (
               <div className="absolute inset-0 flex items-center justify-center rounded-xl pointer-events-none">
-                <p className="text-[15px] font-semibold text-[#0a84ff]">
+                <p className="text-[var(--font-lg)] font-semibold text-[#0a84ff]">
                   ここにドロップ
                 </p>
               </div>
@@ -134,13 +134,13 @@ export default function AnalyzePage() {
 
           {/* ファイル名+解析ボタン */}
           <div className="flex items-center justify-between mt-3">
-            <span className="text-[12.5px] text-[#a1a1a5]">
+            <span className="text-[var(--font-sm)] text-[#a1a1a5]">
               {fileName ? `📄 ${fileName}` : ""}
             </span>
             <button
               onClick={handleSubmit}
               disabled={loading || !text.trim()}
-              className="px-6 h-9 rounded-lg text-[13px] font-semibold border-none cursor-pointer disabled:opacity-40"
+              className="px-6 h-9 rounded-lg text-[var(--font-base)] font-semibold border-none cursor-pointer disabled:opacity-40"
               style={{ background: "#0a84ff", color: "#fff" }}
             >
               {loading ? "解析中..." : "解析する"}
@@ -159,12 +159,12 @@ export default function AnalyzePage() {
                   "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)",
               }}
             >
-              <p className="text-[11px] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">
+              <p className="text-[var(--font-xs)] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">
                 判定結果
               </p>
               <div className="flex items-center gap-2 mb-3">
                 <span
-                  className="px-2 py-0.5 rounded-md text-[11px] font-semibold"
+                  className="px-2 py-0.5 rounded-md text-[var(--font-xs)] font-semibold"
                   style={
                     result.analysis.isNew
                       ? { color: "#30a14e", background: "rgba(48,179,80,.14)" }
@@ -174,17 +174,17 @@ export default function AnalyzePage() {
                   {result.analysis.isNew ? "新規開発" : "改造"}
                 </span>
                 <span
-                  className="px-2 py-0.5 rounded-md text-[11px] font-semibold font-mono"
+                  className="px-2 py-0.5 rounded-md text-[var(--font-xs)] font-semibold font-mono"
                   style={{ background: "#f2f2f4", color: "#6e6e73" }}
                 >
                   {result.techStack}
                 </span>
               </div>
-              <p className="text-[13px] text-[#6e6e73] m-0 leading-relaxed">
+              <p className="text-[var(--font-base)] text-[#6e6e73] m-0 leading-relaxed">
                 {result.analysis.reason}
               </p>
               {result.analysis.systemName && (
-                <p className="text-[12.5px] text-[#3a3a3c] mt-2 m-0">
+                <p className="text-[var(--font-sm)] text-[#3a3a3c] mt-2 m-0">
                   対象: {result.analysis.systemName}
                 </p>
               )}
@@ -198,17 +198,19 @@ export default function AnalyzePage() {
                   "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)",
               }}
             >
-              <p className="text-[11px] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">
+              <p className="text-[var(--font-xs)] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">
                 類似リポジトリ候補
               </p>
               {(result.condidates?.length ?? 0) === 0 ? (
-                <p className="text-[13px] text-[#a1a1a6] m-0">候補なし</p>
+                <p className="text-[var(--font-base)] text-[#a1a1a6] m-0">
+                  候補なし
+                </p>
               ) : (
                 <ul className="m-0 p-0 list-none flex flex-col gap-1">
                   {result.condidates.map((repo) => (
                     <li
                       key={repo.id}
-                      className="text-[13px] text-[#3a3a3c] py-1"
+                      className="text-[var(--font-base)] text-[#3a3a3c] py-1"
                       style={{ borderBottom: ".5px solid rgba(0,0,0,.05)" }}
                     >
                       {repo.repoName}
@@ -220,7 +222,7 @@ export default function AnalyzePage() {
 
             {/* 次のステップへ */}
             <button
-              className="w-full h-10 rounded-lg text-[13px] font-semibold border-none cursor-pointer"
+              className="w-full h-10 rounded-lg text-[var(--font-base)] font-semibold border-none cursor-pointer"
               style={{ background: "#0a84ff", color: "#fff" }}
               onClick={() => router.push("/features")}
             >

@@ -46,12 +46,12 @@ export default function OpsDashboardClient({
         style={{ borderBottom: ".5px solid rgba(0,0,0,.09)" }}
       >
         <h1
-          className="text-[22px] text-[#1d1d1f] m-0"
+          className="text-[var(--font-xl)] text-[#1d1d1f] m-0"
           style={{ fontWeight: 680, letterSpacing: "-.015em" }}
         >
           問い合わせ管理
         </h1>
-        <p className="text-[13px] text-[#6e6e73] mt-1 m-0">
+        <p className="text-[var(--font-base)] text-[#6e6e73] mt-1 m-0">
           {inquiries.length} 件の問い合わせ
         </p>
       </div>
@@ -65,7 +65,7 @@ export default function OpsDashboardClient({
           <button
             key={s}
             onClick={() => setFilterStatus(s)}
-            className="px-3 h-7 rounded-full text-[12px] font-semibold border-none cursor-pointer"
+            className="px-3 h-7 rounded-full text-[var(--font-sm)] font-semibold border-none cursor-pointer"
             style={
               filterStatus === s
                 ? { background: "#0a84ff", color: "#fff" }
@@ -80,7 +80,7 @@ export default function OpsDashboardClient({
       {/* 一覧 */}
       <div className="flex-1 px-8 py-6 flex flex-col gap-3 max-w-3xl w-full mx-auto">
         {filtered.length === 0 ? (
-          <p className="text-[13px] text-[#a1a1a6]">
+          <p className="text-[var(--font-base)] text-[#a1a1a6]">
             該当する問い合わせはありません
           </p>
         ) : (
@@ -97,7 +97,7 @@ export default function OpsDashboardClient({
               <div className="flex items-center gap-2 mb-2">
                 {/* ステータスバッジ */}
                 <span
-                  className="px-2 py-0.5 rounded-md text-[11px] font-semibold"
+                  className="px-2 py-0.5 rounded-md text-[var(--font-xs)] font-semibold"
                   style={{
                     color: STATUS_COLOR[inquiry.status],
                     background: `${STATUS_COLOR[inquiry.status]}1a`,
@@ -107,7 +107,7 @@ export default function OpsDashboardClient({
                 </span>
                 {/* AIカテゴリバッジ */}
                 <span
-                  className="px-2 py-0.5 rounded-md text-[11px] font-semibold"
+                  className="px-2 py-0.5 rounded-md text-[var(--font-xs)] font-semibold"
                   style={{ background: "#f2f2f4", color: "#6e6e73" }}
                 >
                   {CATEGORY_LABEL[inquiry.aiCategory]}
@@ -115,7 +115,7 @@ export default function OpsDashboardClient({
                 {/* 確定済みは別表示 */}
                 {inquiry.confirmedCategory && (
                   <span
-                    className="px-2 py-0.5 rounded-md text-[11px] font-semibold"
+                    className="px-2 py-0.5 rounded-md text-[var(--font-xs)] font-semibold"
                     style={{
                       background: "rgba(10,132,255,.12)",
                       color: "#0a6fe0",
@@ -128,7 +128,7 @@ export default function OpsDashboardClient({
               <p className="text-[14px] font-semibold text-[#1d1d1f] m-0 mb-1">
                 {inquiry.title}
               </p>
-              <p className="text-[12.5px] text-[#6e6e73] m-0">
+              <p className="text-[var(--font-sm)] text-[#6e6e73] m-0">
                 {inquiry.name || "匿名"} · {inquiry.createdAt.slice(0, 10)}
               </p>
             </div>

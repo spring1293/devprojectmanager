@@ -122,3 +122,21 @@ export async function createInitialStructure(
     sha: newCommit.sha,
   });
 }
+
+//リポジトリにWebhookを自動登録する
+export async function createWebhook(fullRepoName: string): Promise<void> {
+  const [owner, repo] = fullRepoName.split("/");
+
+  await octokit.rest.repos.createWebhook({
+    owner,
+    repo,
+    config: {
+      url: `${process.env.APP_URL}/api/webhook`, //CloudRunのURL
+      content_type: "json",
+      secret: process.env.GITHUB_WEBHOOK_SECRET!,
+      insecure_ssl: "0",
+    },
+    events: ["push"],
+    active: true,
+  });
+}

@@ -1,5 +1,7 @@
 "use client";
 
+const SHOW_TEST_MAIL = false; //trueにすると再表示
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Branch } from "@/types/branch";
@@ -33,6 +35,11 @@ export default function DashboardClient({
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [selectedBranchOpInquiry, setSelectedBranchOpInquiry] =
     useState<Inquiry | null>(null);
+  const [testMailTo, setTestMailTo] = useState("");
+  const [testMailStatus, setTestMailStatus] = useState<
+    "idle" | "sending" | "ok" | "error"
+  >("idle");
+  const [testMailError, setTestMailError] = useState<string | null>(null);
   const [localBranchNames, setLocalBranchNames] = useState<
     Record<string, string>
   >({});
@@ -91,6 +98,30 @@ export default function DashboardClient({
     }
   };
 
+  //テストメールを送信する
+  const handleTestMail = async () => {
+    if (!testMailTo.trim()) return;
+    setTestMailStatus("sending");
+    setTestMailError(null);
+    try {
+      const res = await fetch("/api/test-mail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: testMailTo }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTestMailStatus("ok");
+      } else {
+        setTestMailStatus("error");
+        setTestMailError(data.error ?? "送信失敗");
+      }
+    } catch {
+      setTestMailSatus("error");
+      setTestMailError("ネットワークエラー");
+    }
+  };
+
   // タブUI共通スタイル
   const tabStyle = (active: boolean) => ({
     background: "none" as const,
@@ -111,20 +142,27 @@ export default function DashboardClient({
       >
         {/* ブランド行 */}
         <div className="px-[22px] pt-[22px] pb-[18px]">
-          <p className="text-sm font-semibold text-[#0000cd] tracking-tight m-0">
-            ハツメイカー(デジタルモデル)
+          <p className="text-[20px] font-semibold text-[#0000cd] tracking-tight m-0">
+            ハツメイカー
           </p>
-          <p className="text-[11px] text-[#8a8a8e] m-0">Software Only</p>
-          <p className="text-[11px] text-[#8a8a8e] m-0">DevOps Support</p>
+          <p className="text-[20px] font-semibold text-[#0000cd] tracking-tight m-0">
+            (デジタルモデル)
+          </p>
+          <p className="text-[var(--font-xs)] text-[#8a8a8e] m-0">
+            Software Only
+          </p>
+          <p className="text-[var(--font-xs)] text-[#8a8a8e] m-0">
+            DevOps Support
+          </p>
         </div>
 
-        <p className="text-[11px] font-semibold text-[#8a8a8e] px-6 pb-1.5 m-0">
+        <p className="text-[var(--font-xs)] font-semibold text-[#8a8a8e] px-6 pb-1.5 m-0">
           リポジトリ
         </p>
 
         <div className="flex-1 overflow-y-auto px-2.5 pb-2">
           {repoList.length === 0 ? (
-            <p className="text-[13px] text-[#8a8a8e] px-2 py-2">
+            <p className="text-[var(--font-base)] text-[#8a8a8e] px-2 py-2">
               リポジトリなし
             </p>
           ) : (
@@ -147,12 +185,12 @@ export default function DashboardClient({
                   }
                 >
                   <p
-                    className="text-[13px] text-[#1d1d1f] m-0 truncate"
+                    className="text-[var(--font-base)] text-[#1d1d1f] m-0 truncate"
                     style={{ fontWeight: isSelected ? 650 : 500 }}
                   >
                     {repoShort}
                   </p>
-                  <p className="text-[11px] text-[#8a8a8e] m-0">
+                  <p className="text-[var(--font-xs)] text-[#8a8a8e] m-0">
                     {repoMap[repo].length} branches
                   </p>
                 </div>
@@ -169,12 +207,54 @@ export default function DashboardClient({
         >
           <button
             onClick={() => router.push("/analyze")}
-            className="w-full h-9 rounded-lg text-[12.5px] font-semibold border-none cursor-pointer"
+            className="w-full h-9 rounded-lg text-[var(--font-sm)] font-semibold border-none cursor-pointer"
             style={{ background: "rgba(10,132,255,.10)", color: "#0a6fe0" }}
           >
             ＋ 新規プロジェクト追加
           </button>
         </div>
+
+        {/* メール送信テスト(フラグがfalseなら非表示) */}
+        {SHOW_TEST_MAIL && (
+          <div
+            style={{
+              padding: "10px 14px",
+              borderTop: ".5px solid rgba(0,0,0,.08)",
+            }}
+          >
+            <p className="text-[var(--font-2xs)] font-semibold text-[#8a8a8e] mb-1.5">
+              メール送信テスト
+            </p>
+            <input
+              value={testMailTo}
+              onChange={(e) => {
+                setTestMailTo(e.target.value);
+                setTestMailStatus("idle");
+              }}
+              placeholder="送信先メールアドレス"
+              className="w-full h-8 px-2 rounded-lg text-[var(--font-2xs)] outline-none mb-1.5"
+              style={{ border: ".5px solid rgba(0,0,0,.18)" }}
+            />
+            <button
+              onClick={handleTestMail}
+              disabled={testMailStatus === "sending" || !testMailTo.trim()}
+              className="w-full h-8 rounded-lg text-[var(--font-2xs)] font-semibold border-none cursor-pointer disabled:opacity-40"
+              style={{ background: "rgba(0,0,0,.06)", color: "#3a3a3c" }}
+            >
+              {testMailStatus === "sending" ? "送信中..." : "テストメール送信"}
+            </button>
+            {testMailStatus === "ok" && (
+              <p className="text-[var(--font-2xs)] text-[#34c759] mt-1">
+                送信成功 ✓
+              </p>
+            )}
+            {testMailStatus === "error" && (
+              <p className="text-[var(--font-2xs)] text-[#ff3b30] mt-1">
+                {testMailError}
+              </p>
+            )}
+          </div>
+        )}
       </aside>
 
       {/* メインエリア */}
@@ -186,14 +266,14 @@ export default function DashboardClient({
         >
           <button
             onClick={() => setTab("branches")}
-            className="text-[13px] font-semibold border-none cursor-pointer h-full"
+            className="text-[var(--font-base)] font-semibold border-none cursor-pointer h-full"
             style={tabStyle(tab === "branches")}
           >
             ブランチ一覧
           </button>
           <button
             onClick={() => setTab("inquiries")}
-            className="text-[13px] font-semibold border-none cursor-pointer h-full"
+            className="text-[var(--font-base)] font-semibold border-none cursor-pointer h-full"
             style={tabStyle(tab === "inquiries")}
           >
             問い合わせ
@@ -207,18 +287,18 @@ export default function DashboardClient({
               {selectedRepo ? (
                 <>
                   <h1
-                    className="text-[22px] text-[#1d1d1f] mb-1"
+                    className="text-[var(--font-xl)] text-[#1d1d1f] mb-1"
                     style={{ fontWeight: 680, letterSpacing: "-.015em" }}
                   >
                     {selectedRepo.split("/")[1]}
                   </h1>
-                  <p className="text-[12.5px] text-[#a1a1a6] font-mono mb-6">
+                  <p className="text-[var(--font-sm)] text-[#a1a1a6] font-mono mb-6">
                     {selectedRepo}
                   </p>
 
-                  <h2 className="text-[15px] font-semibold text-[#1d1d1f] mb-3">
+                  <h2 className="text-[var(--font-lg)] font-semibold text-[#1d1d1f] mb-3">
                     ブランチ一覧
-                    <span className="text-[12.5px] font-normal text-[#a1a1a6] ml-2">
+                    <span className="text-[var(--font-sm)] font-normal text-[#a1a1a6] ml-2">
                       {selectedBranches.length} ブランチ
                     </span>
                   </h2>
@@ -233,11 +313,11 @@ export default function DashboardClient({
                             "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)",
                         }}
                       >
-                        <p className="text-[12.5px] font-semibold text-[#1d1d1f] font-mono m-0 mb-1">
+                        <p className="text-[var(--font-sm)] font-semibold text-[#1d1d1f] font-mono m-0 mb-1">
                           {branch.branchName}
                         </p>
                         {branch.assignee && (
-                          <p className="text-[12.5px] text-[#6e6e73] m-0 mb-2">
+                          <p className="text-[var(--font-sm)] text-[#6e6e73] m-0 mb-2">
                             担当: {branch.assignee}
                           </p>
                         )}
@@ -245,7 +325,7 @@ export default function DashboardClient({
                           {branch.features.map((f) => (
                             <li
                               key={f.id}
-                              className="text-[12.5px] text-[#6e6e73]"
+                              className="text-[var(--font-sm)] text-[#6e6e73]"
                             >
                               {f.title}
                             </li>
@@ -259,15 +339,15 @@ export default function DashboardClient({
                               border: ".5px solid rgba(0,0,0,.06)",
                             }}
                           >
-                            <p className="text-[11px] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-1.5">
+                            <p className="text-[var(--font-xs)] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-1.5">
                               コードレビュー結果
                             </p>
-                            <p className="text-[12.5px] text-[#3a3a3c] m-0 whitespace-pre-wrap leading-relaxed">
+                            <p className="text-[var(--font-sm)] text-[#3a3a3c] m-0 whitespace-pre-wrap leading-relaxed">
                               {branch.lastReview}
                             </p>
                           </div>
                         ) : (
-                          <p className="text-[12.5px] text-[#a1a1a6] m-0">
+                          <p className="text-[var(--font-sm)] text-[#a1a1a6] m-0">
                             レビュー未実施
                           </p>
                         )}
@@ -295,7 +375,7 @@ export default function DashboardClient({
               <div className="flex gap-2">
                 <button
                   onClick={() => setInquiryFilter("repo")}
-                  className="px-3 h-7 rounded-full text-[11px] font-semibold border-none cursor-pointer"
+                  className="px-3 h-7 rounded-full text-[var(--font-xs)] font-semibold border-none cursor-pointer"
                   style={
                     inquiryFilter === "repo"
                       ? { background: "#0a84ff", color: "#fff" }
@@ -306,7 +386,7 @@ export default function DashboardClient({
                 </button>
                 <button
                   onClick={() => setInquiryFilter("all")}
-                  className="px-3 h-7 rounded-full text-[11px] font-semibold border-none cursor-pointer"
+                  className="px-3 h-7 rounded-full text-[var(--font-xs)] font-semibold border-none cursor-pointer"
                   style={
                     inquiryFilter === "all"
                       ? { background: "#0a84ff", color: "#fff" }
@@ -319,7 +399,7 @@ export default function DashboardClient({
               <div className="flex gap-2">
                 <button
                   onClick={() => setInquiryView("kanban")}
-                  className="px-3 h-7 rounded-full text-[11px] font-semibold border-none cursor-pointer"
+                  className="px-3 h-7 rounded-full text-[var(--font-xs)] font-semibold border-none cursor-pointer"
                   style={
                     inquiryView === "kanban"
                       ? { background: "#0a84ff", color: "#fff" }
@@ -330,7 +410,7 @@ export default function DashboardClient({
                 </button>
                 <button
                   onClick={() => setInquiryView("graph")}
-                  className="px-3 h-7 rounded-full text-[11px] font-semibold border-none cursor-pointer"
+                  className="px-3 h-7 rounded-full text-[var(--font-xs)] font-semibold border-none cursor-pointer"
                   style={
                     inquiryView === "graph"
                       ? { background: "#0a84ff", color: "#fff" }

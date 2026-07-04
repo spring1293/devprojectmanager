@@ -9,14 +9,14 @@
 
 ## 確定した設計方針
 
-| 論点 | 採用方針 |
-|---|---|
-| ステータス変更 | カード上のボタンで変更（ドラッグ&ドロップなし） |
-| 案件番号 | Firestore ID の先頭6文字（例: `#a3f9bc`） |
-| 未確認表示 | カンバン上部の折りたたみバナー |
-| 棒グラフ実装 | カスタムSVG（ライブラリなし） |
-| 配置場所 | `/dashboard` の問い合わせタブを置き換え |
-| 担当者入力 | 自由入力テキスト（将来的にユーザーマスタ選択式に変更予定） |
+| 論点           | 採用方針                                                   |
+| -------------- | ---------------------------------------------------------- |
+| ステータス変更 | カード上のボタンで変更（ドラッグ&ドロップなし）            |
+| 案件番号       | Firestore ID の先頭6文字（例: `#a3f9bc`）                  |
+| 未確認表示     | カンバン上部の折りたたみバナー                             |
+| 棒グラフ実装   | カスタムSVG（ライブラリなし）                              |
+| 配置場所       | `/dashboard` の問い合わせタブを置き換え                    |
+| 担当者入力     | 自由入力テキスト（将来的にユーザーマスタ選択式に変更予定） |
 
 ---
 
@@ -26,7 +26,7 @@
 
 ```ts
 priority: "low" | "medium" | "high" | "critical"; // 小・中・大・緊急
-assignee: string;       // 担当者名（自由入力）
+assignee: string; // 担当者名（自由入力）
 dueDate: string | null; // 対応完了予定日（ISO 8601日付文字列 "YYYY-MM-DD"）
 ```
 
@@ -73,11 +73,11 @@ dueDate: null,
 
 ### カラム定義
 
-| カラム | ステータス | 追加条件 |
-|---|---|---|
-| 未着手 | `open` | `confirmedCategory !== null` のみ表示 |
-| 作業中 | `in_progress` | - |
-| 直近完了 | `resolved` | 完了から24時間以内。トグルで表示/非表示切り替え |
+| カラム   | ステータス    | 追加条件                                        |
+| -------- | ------------- | ----------------------------------------------- |
+| 未着手   | `open`        | `confirmedCategory !== null` のみ表示           |
+| 作業中   | `in_progress` | -                                               |
+| 直近完了 | `resolved`    | 完了から24時間以内。トグルで表示/非表示切り替え |
 
 > `confirmedCategory === null`（未確認）はカンバン本体には表示せず、上部バナーに表示する。
 
@@ -100,38 +100,38 @@ dueDate: null,
 
 ### ステータス変更ボタン
 
-| カラム | ボタン | 変更後ステータス |
-|---|---|---|
-| 未着手 | `[作業開始]` | `in_progress` |
-| 作業中 | `[完了にする]` | `resolved` |
-| 直近完了 | なし（グレーアウト表示） | - |
+| カラム   | ボタン                   | 変更後ステータス |
+| -------- | ------------------------ | ---------------- |
+| 未着手   | `[作業開始]`             | `in_progress`    |
+| 作業中   | `[完了にする]`           | `resolved`       |
+| 直近完了 | なし（グレーアウト表示） | -                |
 
 ### 重要度バッジ
 
-| 値 | ラベル | 色 |
-|---|---|---|
-| `critical` | 緊急 | 赤 `#ff3b30` |
-| `high` | 大 | オレンジ `#ff9500` |
-| `medium` | 中 | 青 `#0a84ff` |
-| `low` | 小 | グレー `#8a8a8e` |
+| 値         | ラベル | 色                 |
+| ---------- | ------ | ------------------ |
+| `critical` | 緊急   | 赤 `#ff3b30`       |
+| `high`     | 大     | オレンジ `#ff9500` |
+| `medium`   | 中     | 青 `#0a84ff`       |
+| `low`      | 小     | グレー `#8a8a8e`   |
 
 ### 期日バッジ（2段階アラート）
 
-| 条件 | 色 |
-|---|---|
+| 条件                  | 色                       |
+| --------------------- | ------------------------ |
 | 8日以上先 or 期日なし | グレー `#a1a1a6`（通常） |
-| 7日以内 | 黄色 `#ff9500` |
-| 3日以内 または 超過 | 赤 `#ff3b30` |
+| 7日以内               | 黄色 `#ff9500`           |
+| 3日以内 または 超過   | 赤 `#ff3b30`             |
 
 ### カラム内ソート
 
 ヘッダーのドロップダウンで切り替え可能。
 
-| ソート | 説明 |
-|---|---|
+| ソート                 | 説明                                                    |
+| ---------------------- | ------------------------------------------------------- |
 | 重要度順（デフォルト） | `critical` は常に最上位固定。それ以外は high→medium→low |
-| 期日順 | 近い順（期日なしは末尾） |
-| 登録日順 | 新しい順 |
+| 期日順                 | 近い順（期日なしは末尾）                                |
+| 登録日順               | 新しい順                                                |
 
 ### 担当者フィルタ
 
@@ -151,13 +151,13 @@ dueDate: null,
 
 その日の問い合わせの最高重要度に基づく。
 
-| 最高重要度 | 棒の色 |
-|---|---|
-| `critical` を含む | 赤 `#ff3b30` |
-| `high` を含む | オレンジ `#ff9500` |
-| `medium` のみ | 青 `#0a84ff` |
-| `low` のみ | グレー `#8a8a8e` |
-| 0件 | 表示なし |
+| 最高重要度        | 棒の色             |
+| ----------------- | ------------------ |
+| `critical` を含む | 赤 `#ff3b30`       |
+| `high` を含む     | オレンジ `#ff9500` |
+| `medium` のみ     | 青 `#0a84ff`       |
+| `low` のみ        | グレー `#8a8a8e`   |
+| 0件               | 表示なし           |
 
 ### 実装
 
@@ -170,15 +170,15 @@ dueDate: null,
 
 ## 変更ファイル一覧
 
-| # | ファイル | 変更種別 | 内容 |
-|---|---|---|---|
-| 1 | `types/inquiry.ts` | 変更 | `priority` `assignee` `dueDate` 追加 |
-| 2 | `lib/firestore.ts` | 変更 | save/update で新フィールド対応 |
-| 3 | `app/api/inquiry/route.ts` | 変更 | POST時のデフォルト値追加 |
-| 4 | `app/ops/inquiry/[id]/OpsDetailClient.tsx` | 変更 | 右パネルに3フィールドの編集UI追加 |
-| 5 | `app/dashboard/DashboardClient.tsx` | 変更 | 問い合わせタブをカンバン/グラフビューに置き換え |
-| 6 | `app/dashboard/InquiryKanban.tsx` | 新規作成 | カンバンボードコンポーネント |
-| 7 | `app/dashboard/InquiryGraph.tsx` | 新規作成 | 棒グラフコンポーネント |
+| #   | ファイル                                   | 変更種別 | 内容                                            |
+| --- | ------------------------------------------ | -------- | ----------------------------------------------- |
+| 1   | `types/inquiry.ts`                         | 変更     | `priority` `assignee` `dueDate` 追加            |
+| 2   | `lib/firestore.ts`                         | 変更     | save/update で新フィールド対応                  |
+| 3   | `app/api/inquiry/route.ts`                 | 変更     | POST時のデフォルト値追加                        |
+| 4   | `app/ops/inquiry/[id]/OpsDetailClient.tsx` | 変更     | 右パネルに3フィールドの編集UI追加               |
+| 5   | `app/dashboard/DashboardClient.tsx`        | 変更     | 問い合わせタブをカンバン/グラフビューに置き換え |
+| 6   | `app/dashboard/InquiryKanban.tsx`          | 新規作成 | カンバンボードコンポーネント                    |
+| 7   | `app/dashboard/InquiryGraph.tsx`           | 新規作成 | 棒グラフコンポーネント                          |
 
 ---
 
@@ -211,9 +211,9 @@ export type Inquiry = {
   aiCategory: InquiryCategory;
   confirmedCategory: InquiryCategory | null;
   status: InquiryStatus;
-  priority: InquiryPriority;      // 追加
-  assignee: string;               // 追加
-  dueDate: string | null;         // 追加
+  priority: InquiryPriority; // 追加
+  assignee: string; // 追加
+  dueDate: string | null; // 追加
   suggestedAnswer: string;
   resolvedNote: string;
   createdAt: string;
@@ -251,9 +251,9 @@ const id = await saveInquiry({
   aiCategory,
   confirmedCategory: null,
   status: "open",
-  priority: "medium",   // 追加
-  assignee: "",          // 追加
-  dueDate: null,         // 追加
+  priority: "medium", // 追加
+  assignee: "", // 追加
+  dueDate: null, // 追加
   suggestedAnswer,
   resolvedNote: "",
   createdAt: new Date().toISOString(),
@@ -273,15 +273,22 @@ const id = await saveInquiry({
 #### 重要度
 
 ```tsx
-<div className="rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)" }}>
-  <p className="text-[11px] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">重要度</p>
+<div
+  className="rounded-xl p-5"
+  style={{
+    boxShadow: "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)",
+  }}
+>
+  <p className="text-[var(--font-xs)] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">
+    重要度
+  </p>
   <div className="flex flex-col gap-2">
     {(["critical", "high", "medium", "low"] as InquiryPriority[]).map((p) => (
       <button
         key={p}
         onClick={() => patch({ priority: p })}
         disabled={saving}
-        className="h-9 rounded-lg text-[13px] font-semibold border-none cursor-pointer disabled:opacity-40"
+        className="h-9 rounded-lg text-[var(--font-base)] font-semibold border-none cursor-pointer disabled:opacity-40"
         style={
           (inquiry.priority ?? "medium") === p
             ? { background: PRIORITY_COLOR[p], color: "#fff" }
@@ -298,20 +305,27 @@ const id = await saveInquiry({
 #### 担当者
 
 ```tsx
-<div className="rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)" }}>
-  <p className="text-[11px] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">担当者</p>
+<div
+  className="rounded-xl p-5"
+  style={{
+    boxShadow: "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)",
+  }}
+>
+  <p className="text-[var(--font-xs)] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">
+    担当者
+  </p>
   <input
     type="text"
     value={assignee}
     onChange={(e) => setAssignee(e.target.value)}
     placeholder="担当者名を入力"
-    className="w-full h-9 px-3 rounded-lg text-[13px] text-[#1d1d1f] outline-none"
+    className="w-full h-9 px-3 rounded-lg text-[var(--font-base)] text-[#1d1d1f] outline-none"
     style={{ border: ".5px solid rgba(0,0,0,.18)" }}
   />
   <button
     onClick={() => patch({ assignee })}
     disabled={saving}
-    className="mt-2 w-full h-8 rounded-lg text-[12.5px] font-semibold border-none cursor-pointer disabled:opacity-40"
+    className="mt-2 w-full h-8 rounded-lg text-[var(--font-sm)] font-semibold border-none cursor-pointer disabled:opacity-40"
     style={{ background: "rgba(0,0,0,.07)", color: "#3a3a3c" }}
   >
     保存
@@ -322,19 +336,26 @@ const id = await saveInquiry({
 #### 対応完了予定日
 
 ```tsx
-<div className="rounded-xl p-5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)" }}>
-  <p className="text-[11px] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">対応完了予定日</p>
+<div
+  className="rounded-xl p-5"
+  style={{
+    boxShadow: "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)",
+  }}
+>
+  <p className="text-[var(--font-xs)] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">
+    対応完了予定日
+  </p>
   <input
     type="date"
     value={dueDate ?? ""}
     onChange={(e) => setDueDate(e.target.value || null)}
-    className="w-full h-9 px-3 rounded-lg text-[13px] text-[#1d1d1f] outline-none"
+    className="w-full h-9 px-3 rounded-lg text-[var(--font-base)] text-[#1d1d1f] outline-none"
     style={{ border: ".5px solid rgba(0,0,0,.18)" }}
   />
   <button
     onClick={() => patch({ dueDate })}
     disabled={saving}
-    className="mt-2 w-full h-8 rounded-lg text-[12.5px] font-semibold border-none cursor-pointer disabled:opacity-40"
+    className="mt-2 w-full h-8 rounded-lg text-[var(--font-sm)] font-semibold border-none cursor-pointer disabled:opacity-40"
     style={{ background: "rgba(0,0,0,.07)", color: "#3a3a3c" }}
   >
     保存
@@ -351,10 +372,16 @@ const [dueDate, setDueDate] = useState<string | null>(initial.dueDate ?? null);
 
 // 定数
 const PRIORITY_LABEL: Record<InquiryPriority, string> = {
-  critical: "緊急", high: "大", medium: "中", low: "小",
+  critical: "緊急",
+  high: "大",
+  medium: "中",
+  low: "小",
 };
 const PRIORITY_COLOR: Record<InquiryPriority, string> = {
-  critical: "#ff3b30", high: "#ff9500", medium: "#0a84ff", low: "#8a8a8e",
+  critical: "#ff3b30",
+  high: "#ff9500",
+  medium: "#0a84ff",
+  low: "#8a8a8e",
 };
 ```
 
@@ -380,7 +407,7 @@ type Props = {
 function getDueDateColor(dueDate: string | null): string {
   if (!dueDate) return "#a1a1a6";
   const diff = Math.ceil(
-    (new Date(dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    (new Date(dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
   );
   if (diff <= 3) return "#ff3b30";
   if (diff <= 7) return "#ff9500";
@@ -393,7 +420,10 @@ function getDueDateColor(dueDate: string | null): string {
 ```ts
 const PRIORITY_ORDER = { critical: 0, high: 1, medium: 2, low: 3 };
 
-function sortCards(cards: Inquiry[], sortKey: "priority" | "dueDate" | "createdAt"): Inquiry[] {
+function sortCards(
+  cards: Inquiry[],
+  sortKey: "priority" | "dueDate" | "createdAt",
+): Inquiry[] {
   return [...cards].sort((a, b) => {
     // 緊急は常に最上位
     const aCritical = (a.priority ?? "medium") === "critical" ? 0 : 1;
@@ -401,7 +431,10 @@ function sortCards(cards: Inquiry[], sortKey: "priority" | "dueDate" | "createdA
     if (aCritical !== bCritical) return aCritical - bCritical;
 
     if (sortKey === "priority") {
-      return PRIORITY_ORDER[a.priority ?? "medium"] - PRIORITY_ORDER[b.priority ?? "medium"];
+      return (
+        PRIORITY_ORDER[a.priority ?? "medium"] -
+        PRIORITY_ORDER[b.priority ?? "medium"]
+      );
     }
     if (sortKey === "dueDate") {
       if (!a.dueDate && !b.dueDate) return 0;
@@ -458,7 +491,8 @@ const dayData = dates.map((date) => {
   const items = inquiries.filter((i) => i.dueDate === date);
   const maxPriority = items.reduce<InquiryPriority | null>((acc, i) => {
     const order = PRIORITY_ORDER[i.priority ?? "medium"];
-    if (acc === null || order < PRIORITY_ORDER[acc]) return i.priority ?? "medium";
+    if (acc === null || order < PRIORITY_ORDER[acc])
+      return i.priority ?? "medium";
     return acc;
   }, null);
   return { date, count: items.length, maxPriority };
@@ -538,7 +572,7 @@ const handleStatusChange = async (id: string, status: InquiryStatus) => {
   });
   if (res.ok) {
     setInquiryList((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, status } : i))
+      prev.map((i) => (i.id === id ? { ...i, status } : i)),
     );
   }
 };
@@ -554,9 +588,9 @@ const handleStatusChange = async (id: string, status: InquiryStatus) => {
 表示側で以下のフォールバックを設ける。
 
 ```ts
-inquiry.priority ?? "medium"   // デフォルト: 中
-inquiry.assignee ?? ""         // デフォルト: 空文字
-inquiry.dueDate ?? null        // デフォルト: なし
+inquiry.priority ?? "medium"; // デフォルト: 中
+inquiry.assignee ?? ""; // デフォルト: 空文字
+inquiry.dueDate ?? null; // デフォルト: なし
 ```
 
 Firestoreへの書き込みは変更なし。既存ドキュメントを一括更新する必要はない。

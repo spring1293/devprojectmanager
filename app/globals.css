@@ -3,6 +3,14 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /*フォントサイズ変数 --　ここを変えると全体に反映*/
+  --font-2xs:  12px;    /*バッジ、カウント*/
+  --font-xs:   13px;    /*ラベル、メタ情報*/
+  --font-sm:   14px;    /*本文・説明文*/
+  --font-base: 15px;    /*メインコンテンツ*/
+  --font-lg:   16px;    /*セクション見出し*/
+  --font-xl:   24px;    /*ページタイトル*/
 }
 
 @theme inline {

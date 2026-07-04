@@ -47,10 +47,10 @@ export default function InquiryGraph({ inquiries }: { inquiries: Inquiry[] }) {
 
   return (
     <div className="px-7 py-6">
-      <h2 className="text-[15px] font-semibold text-[#1d1d1f] mb-1">
+      <h2 className="text-[var(--font-lg)] font-semibold text-[#1d1d1f] mb-1">
         期日別 件数グラフ
       </h2>
-      <p className="text-[12px] text-[#a1a1a6] mb-5">
+      <p className="text-[var(--font-sm)] text-[#a1a1a6] mb-5">
         今日から30日間の対応完了予定日ごとの件数
       </p>
 
@@ -63,7 +63,7 @@ export default function InquiryGraph({ inquiries }: { inquiries: Inquiry[] }) {
                 className="w-3 h-3 rounded-sm"
                 style={{ background: BAR_COLOR[p] }}
               />
-              <span className="text-[11px] text-[#6e6e73]">
+              <span className="text-[var(--font-xs)] text-[#6e6e73]">
                 {p === "critical"
                   ? "緊急"
                   : p === "high"
@@ -170,7 +170,7 @@ export default function InquiryGraph({ inquiries }: { inquiries: Inquiry[] }) {
           (i) => !i.dueDate && i.status !== "resolved",
         ).length;
         return noDueDate > 0 ? (
-          <p className="text-[12px] text-[#a1a1a6] mt-4">
+          <p className="text-[var(--font-sm)] text-[#a1a1a6] mt-4">
             ※ 期日未設定の未完了問い合わせが {noDueDate} 件あります
           </p>
         ) : null;

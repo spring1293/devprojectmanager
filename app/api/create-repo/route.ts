@@ -3,6 +3,7 @@ import {
   createRepository,
   createBranch,
   createInitialStructure,
+  createWebhook,
 } from "@/lib/github";
 import { sendMail } from "@/lib/gmail";
 import { saveRepository, saveBranch } from "@/lib/firestore";
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
 
     //GitHubにリポジトリを作成(full_nameを受け取る)
     const fullRepoName = await createRepository(repoName);
+    await createWebhook(fullRepoName);
 
     //技術スタックに対応するフォルダ構成をpushする
     await createInitialStructure(fullRepoName, techStack);

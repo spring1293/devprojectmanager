@@ -139,14 +139,14 @@ export default function InquiryKanban({
             background: "#fffbf0",
           }}
         >
-          <span className="text-[11px] font-semibold text-[#ff9500]">
+          <span className="text-[var(--font-xs)] font-semibold text-[#ff9500]">
             未確認 {unconfirmed.length}件
           </span>
           {unconfirmed.map((i) => (
             <button
               key={i.id}
               onClick={() => onCardClick(i)}
-              className="px-2.5 h-6 rounded-full text-[11px] font-semibold border-none cursor-pointer hover:opacity-80"
+              className="px-2.5 h-6 rounded-full text-[var(--font-xs)] font-semibold border-none cursor-pointer hover:opacity-80"
               style={{ background: "rgba(255,149,0,.12)", color: "#c97000" }}
             >
               #{i.id.slice(0, 6)} {i.title.slice(0, 20)}
@@ -165,7 +165,7 @@ export default function InquiryKanban({
         <select
           value={sortKey}
           onChange={(e) => setSortKey(e.target.value as typeof sortKey)}
-          className="h-7 px-2 rounded-lg text-[11px] text-[#3a3a3c] outline-none"
+          className="h-7 px-2 rounded-lg text-[var(--font-xs)] text-[#3a3a3c] outline-none"
           style={{ border: ".5px solid rgba(0,0,0,.18)", background: "#fff" }}
         >
           <option value="priority">重要度順</option>
@@ -177,7 +177,7 @@ export default function InquiryKanban({
         <select
           value={assigneeFilter}
           onChange={(e) => setAssigneeFilter(e.target.value)}
-          className="h-7 px-2 rounded-lg text-[11px] text-[#3a3a3c] outline-none"
+          className="h-7 px-2 rounded-lg text-[var(--font-xs)] text-[#3a3a3c] outline-none"
           style={{ border: ".5px solid rgba(0,0,0,.18)", background: "#fff" }}
         >
           <option value="all">担当者: すべて</option>
@@ -191,7 +191,7 @@ export default function InquiryKanban({
         {/* 完了表示トグル */}
         <button
           onClick={() => setShowResolved((v) => !v)}
-          className="ml-auto px-3 h-7 rounded-lg text-[11px] font-semibold border-none cursor-pointer"
+          className="ml-auto px-3 h-7 rounded-lg text-[var(--font-xs)] font-semibold border-none cursor-pointer"
           style={
             showResolved
               ? { background: "#0a84ff", color: "#fff" }
@@ -280,9 +280,11 @@ function KanbanColumn({
     <div className="flex flex-col flex-none w-72">
       {/* カラムヘッダー */}
       <div className="flex items-center gap-2 mb-3">
-        <p className="text-[13px] font-semibold text-[#1d1d1f] m-0">{title}</p>
+        <p className="text-[var(--font-base)] font-semibold text-[#1d1d1f] m-0">
+          {title}
+        </p>
         <span
-          className="px-1.5 py-0.5 rounded-md text-[11px] font-semibold"
+          className="px-1.5 py-0.5 rounded-md text-[var(--font-xs)] font-semibold"
           style={{ background: "rgba(0,0,0,.06)", color: "#6e6e73" }}
         >
           {count}
@@ -306,7 +308,7 @@ function KanbanColumn({
           />
         ))}
         {cards.length === 0 && (
-          <p className="text-[12px] text-[#a1a1a6] px-1">なし</p>
+          <p className="text-[var(--font-sm)] text-[#a1a1a6] px-1">なし</p>
         )}
       </div>
     </div>
@@ -352,7 +354,7 @@ function KanbanCard({
       {/* バッジ行 */}
       <div className="flex items-center gap-1.5 mb-2">
         <span
-          className="px-1.5 py-0.5 rounded text-[10px] font-semibold"
+          className="px-1.5 py-0.5 rounded text-[var(--font-2xs)] font-semibold"
           style={{
             background: `${PRIORITY_COLOR[priority]}1a`,
             color: PRIORITY_COLOR[priority],
@@ -362,7 +364,7 @@ function KanbanCard({
         </span>
         {inquiry.dueDate && (
           <span
-            className="px-1.5 py-0.5 rounded text-[10px] font-semibold ml-auto"
+            className="px-1.5 py-0.5 rounded text-[var(--font-2xs)] font-semibold ml-auto"
             style={{ color: dueDateColor }}
           >
             📅 {inquiry.dueDate}
@@ -389,12 +391,12 @@ function KanbanCard({
       </div>
 
       {/* タイトル */}
-      <p className="text-[13px] font-semibold text-[#1d1d1f] m-0 mb-1 line-clamp-2">
+      <p className="text-[var(--font-base)] font-semibold text-[#1d1d1f] m-0 mb-1 line-clamp-2">
         {inquiry.title}
       </p>
 
       {/* ID・担当者 */}
-      <p className="text-[11px] text-[#a1a1a6] m-0 mb-3">
+      <p className="text-[var(--font-xs)] text-[#a1a1a6] m-0 mb-3">
         #{inquiry.id.slice(0, 6)}
         {inquiry.assignee ? ` · ${inquiry.assignee}` : ""}
       </p>
@@ -402,7 +404,7 @@ function KanbanCard({
       {/* ブランチ名バッジ */}
       {inquiry.branchId && branchMap?.[inquiry.branchId] && (
         <p
-          className="text-[10px] font-mono mb-3 truncate"
+          className="text-[var(--font-2xs)] font-mono mb-3 truncate"
           style={{ color: "#0a84ff" }}
         >
           🔗 {branchMap[inquiry.branchId]}
@@ -417,7 +419,7 @@ function KanbanCard({
             onStatusChange(inquiry.id, actionStatus);
           }}
           disabled={isChanging}
-          className="w-full h-7 rounded-lg text-[11px] font-semibold border-none cursor-pointer disabled:opacity-40"
+          className="w-full h-7 rounded-lg text-[var(--font-xs)] font-semibold border-none cursor-pointer disabled:opacity-40"
           style={{ background: "rgba(0,0,0,.06)", color: "#3a3a3c" }}
         >
           {isChanging ? "更新中..." : actionLabel}

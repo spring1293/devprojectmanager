@@ -60,10 +60,10 @@ export default function BranchOperationModal({
           className="px-6 pt-5 pb-4"
           style={{ borderBottom: ".5px solid rgba(0,0,0,.08)" }}
         >
-          <p className="text-[13px] font-semibold text-[#1d1d1f] m-0">
+          <p className="text-[var(--font-base)] font-semibold text-[#1d1d1f] m-0">
             ブランチ操作
           </p>
-          <p className="text-[11px] text-[#a1a1a6] m-0 mt-0.5 truncate">
+          <p className="text-[var(--font-xs)] text-[#a1a1a6] m-0 mt-0.5 truncate">
             #{inquiry.id.slice(0, 6)} {inquiry.title}
           </p>
         </div>
@@ -77,7 +77,7 @@ export default function BranchOperationModal({
           {!inquiry.branchId && (
             <button
               onClick={() => setTab("new")}
-              className="text-[12px] font-semibold border-none cursor-pointer h-full"
+              className="text-[var(--font-sm)] font-semibold border-none cursor-pointer h-full"
               style={tabStyle(tab === "new")}
             >
               新規ブランチを作成
@@ -85,7 +85,7 @@ export default function BranchOperationModal({
           )}
           <button
             onClick={() => setTab("existing")}
-            className="text-[12px] font-semibold border-none cursor-pointer h-full"
+            className="text-[var(--font-sm)] font-semibold border-none cursor-pointer h-full"
             style={tabStyle(tab === "existing")}
           >
             既存ブランチに紐付け
@@ -179,7 +179,7 @@ function NewBranchTab({
     <div className="flex flex-col gap-4">
       {/* ブランチ種別 */}
       <div>
-        <p className="text-[11px] font-semibold text-[#6e6e73] mb-1.5">
+        <p className="text-[var(--font-xs)] font-semibold text-[#6e6e73] mb-1.5">
           ブランチ種別
         </p>
         <div className="flex gap-2">
@@ -187,7 +187,7 @@ function NewBranchTab({
             <button
               key={t}
               onClick={() => setBranchType(t)}
-              className="px-3 h-7 rounded-full text-[11px] font-semibold border-none cursor-pointer"
+              className="px-3 h-7 rounded-full text-[var(--font-xs)] font-semibold border-none cursor-pointer"
               style={
                 branchType === t
                   ? { background: "#0a84ff", color: "#fff" }
@@ -202,19 +202,19 @@ function NewBranchTab({
 
       {/* ブランチ名 */}
       <div>
-        <p className="text-[11px] font-semibold text-[#6e6e73] mb-1.5">
+        <p className="text-[var(--font-xs)] font-semibold text-[#6e6e73] mb-1.5">
           ブランチ名
         </p>
         <input
           value={branchSuffix}
           onChange={(e) => setBranchSuffix(e.target.value)}
-          className="w-full h-8 px-3 rounded-lg text-[12px] outline-none"
+          className="w-full h-8 px-3 rounded-lg text-[var(--font-sm)] outline-none"
           style={{ border: ".5px solid rgba(0,0,0,.18)" }}
           placeholder="report-graph-not-displayed"
         />
         {/* プレビュー */}
         <p
-          className="text-[11px] font-mono mt-1.5 px-1"
+          className="text-[var(--font-xs)] font-mono mt-1.5 px-1"
           style={{ color: "#0a84ff" }}
         >
           {branchName}
@@ -223,23 +223,25 @@ function NewBranchTab({
 
       {/* 説明 */}
       <div>
-        <p className="text-[11px] font-semibold text-[#6e6e73] mb-1.5">説明</p>
+        <p className="text-[var(--font-xs)] font-semibold text-[#6e6e73] mb-1.5">
+          説明
+        </p>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 rounded-lg text-[12px] outline-none resize-none"
+          className="w-full px-3 py-2 rounded-lg text-[var(--font-sm)] outline-none resize-none"
           style={{ border: ".5px solid rgba(0,0,0,.18)" }}
         />
       </div>
 
-      {error && <p className="text-[11px] text-[#ff3b30]">{error}</p>}
+      {error && <p className="text-[var(--font-xs)] text-[#ff3b30]">{error}</p>}
 
       {/* ボタン */}
       <div className="flex justify-end gap-2 pt-1">
         <button
           onClick={onClose}
-          className="px-4 h-8 rounded-lg text-[12px] font-semibold border-none cursor-pointer"
+          className="px-4 h-8 rounded-lg text-[var(--font-sm)] font-semibold border-none cursor-pointer"
           style={{ background: "rgba(0,0,0,.06)", color: "#3a3a3c" }}
         >
           キャンセル
@@ -247,7 +249,7 @@ function NewBranchTab({
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className="px-4 h-8 rounded-lg text-[12px] font-semibold border-none cursor-pointer disabled:opacity-40"
+          className="px-4 h-8 rounded-lg text-[var(--font-sm)] font-semibold border-none cursor-pointer disabled:opacity-40"
           style={{ background: "#0a84ff", color: "#fff" }}
         >
           {submitting ? "作成中..." : "ブランチを作成"}
@@ -313,7 +315,7 @@ function ExistingBranchTab({
       <input
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full h-8 px-3 rounded-lg text-[12px] outline-none"
+        className="w-full h-8 px-3 rounded-lg text-[var(--font-sm)] outline-none"
         style={{ border: ".5px solid rgba(0,0,0,.18)" }}
         placeholder="ブランチ名で検索..."
       />
@@ -324,7 +326,7 @@ function ExistingBranchTab({
         style={{ maxHeight: 240 }}
       >
         {filtered.length === 0 ? (
-          <p className="text-[12px] text-[#a1a1a6]">
+          <p className="text-[var(--font-sm)] text-[#a1a1a6]">
             該当するブランチがありません
           </p>
         ) : (
@@ -342,11 +344,11 @@ function ExistingBranchTab({
                   selectedId === b.id ? "rgba(10,132,255,.05)" : "#fff",
               }}
             >
-              <p className="text-[12px] font-mono text-[#1d1d1f] m-0">
+              <p className="text-[var(--font-sm)] font-mono text-[#1d1d1f] m-0">
                 {b.branchName}
               </p>
               {b.inquiryCount > 0 && (
-                <span className="text-[10px] text-[#ff9500] ml-2 shrink-0">
+                <span className="text-[var(--font-2xs)] text-[#ff9500] ml-2 shrink-0">
                   {b.inquiryCount}件紐付け済み
                 </span>
               )}
@@ -357,20 +359,20 @@ function ExistingBranchTab({
 
       {/* 選択中ブランチの注意メッセージ */}
       {selected && selected.inquiryCount > 0 && (
-        <p className="text-[11px] text-[#ff9500]">
+        <p className="text-[var(--font-xs)] text-[#ff9500]">
           このブランチにはすでに {selected.inquiryCount}{" "}
           件の問い合わせが紐付いています。 今回の問い合わせを追加すると{" "}
           {selected.inquiryCount + 1} 件になります。
         </p>
       )}
 
-      {error && <p className="text-[11px] text-[#ff3b30]">{error}</p>}
+      {error && <p className="text-[var(--font-xs)] text-[#ff3b30]">{error}</p>}
 
       {/* ボタン */}
       <div className="flex justify-end gap-2 pt-1">
         <button
           onClick={onClose}
-          className="px-4 h-8 rounded-lg text-[12px] font-semibold border-none cursor-pointer"
+          className="px-4 h-8 rounded-lg text-[var(--font-sm)] font-semibold border-none cursor-pointer"
           style={{ background: "rgba(0,0,0,.06)", color: "#3a3a3c" }}
         >
           キャンセル
@@ -378,7 +380,7 @@ function ExistingBranchTab({
         <button
           onClick={handleSubmit}
           disabled={submitting || !selectedId}
-          className="px-4 h-8 rounded-lg text-[12px] font-semibold border-none cursor-pointer disabled:opacity-40"
+          className="px-4 h-8 rounded-lg text-[var(--font-sm)] font-semibold border-none cursor-pointer disabled:opacity-40"
           style={{ background: "#0a84ff", color: "#fff" }}
         >
           {submitting ? "紐付け中..." : "ブランチに紐付け"}
