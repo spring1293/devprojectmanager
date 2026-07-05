@@ -12,6 +12,7 @@ import InquiryKanban from "@/app/dashboard/InquiryKanban";
 import InquiryGraph from "@/app/dashboard/InquiryGraph";
 import OpsDetailClient from "@/app/ops/inquiry/[id]/OpsDetailClient";
 import BranchOperationModal from "@/app/dashboard/BranchOperationModal";
+import BranchDetailModal from "@/app/dashboard/BranchDetailModal";
 
 type BranchWithMeta = Branch & {
   fullRepoName: string;
@@ -43,6 +44,18 @@ export default function DashboardClient({
   const [localBranchNames, setLocalBranchNames] = useState<
     Record<string, string>
   >({});
+  const [selectedBranch, setSelectedBranch] = useState<BranchWithMeta | null>(
+    null,
+  );
+  const [localAssignees, setLocalAssignees] = useState<Record<string, string>>(
+    {},
+  );
+  const [branchFilter, setBranchFilter] = useState<"incomplete" | "all">(
+    "incomplete",
+  );
+  const [localCompleted, setLocalCompleted] = useState<Record<string, boolean>>(
+    {},
+  );
   const router = useRouter();
 
   const repoMap = branches.reduce<Record<string, BranchWithMeta[]>>(
@@ -70,6 +83,10 @@ export default function DashboardClient({
   const repoList = Object.keys(repoMap);
   const [selectedRepo, setSelectedRepo] = useState(repoList[0] ?? "");
   const selectedBranches = repoMap[selectedRepo] ?? [];
+  const filteredBranches =
+    branchFilter === "all"
+      ? selectedBranches
+      : selectedBranches.filter((b) => !(localCompleted[b.id] ?? b.completed));
 
   // selectedRepo に対応する Firestore repoId を取得
   const selectedRepoId = repositories.find(
@@ -302,23 +319,53 @@ export default function DashboardClient({
                       {selectedBranches.length} ブランチ
                     </span>
                   </h2>
+                  {/* フィルタボタン */}
+                  <div className="flex gap-2 mb-4">
+                    <button
+                      onClick={() => setBranchFilter("incomplete")}
+                      className="px-3 h-7 rounded-full text-[var(--font-xs)] font-semibold border-none cursor-pointer"
+                      style={
+                        branchFilter === "incomplete"
+                          ? { background: "#0a84ff", color: "#fff" }
+                          : { background: "rgba(0,0,0,.06)", color: "#3a3a3c" }
+                      }
+                    >
+                      未完了
+                    </button>
+                    <button
+                      onClick={() => setBranchFilter("all")}
+                      className="px-3 h-7 rounded-full text-[var(--font-xs)] font-semibold border-none cursor-pointer"
+                      style={
+                        branchFilter === "all"
+                          ? { background: "#0a84ff", color: "#fff" }
+                          : { background: "rgba(0,0,0,.06)", color: "#3a3a3c" }
+                      }
+                    >
+                      すべて
+                    </button>
+                  </div>
 
                   <div className="flex flex-col gap-4">
-                    {selectedBranches.map((branch) => (
+                    {filteredBranches.map((branch) => (
                       <div
                         key={branch.id}
-                        className="rounded-xl p-[18px]"
+                        onClick={() => setSelectedBranch(branch)}
+                        className="rounded-xl p-[18px] cursor-pointer hover:opacity-80"
                         style={{
                           boxShadow:
                             "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)",
+                          opacity:
+                            (localCompleted[branch.id] ?? branch.completed)
+                              ? 0.5
+                              : 1,
                         }}
                       >
                         <p className="text-[var(--font-sm)] font-semibold text-[#1d1d1f] font-mono m-0 mb-1">
                           {branch.branchName}
                         </p>
-                        {branch.assignee && (
+                        {(localAssignees[branch.id] ?? branch.assignee) && (
                           <p className="text-[var(--font-sm)] text-[#6e6e73] m-0 mb-2">
-                            担当: {branch.assignee}
+                            担当: {localAssignees[branch.id] ?? branch.assignee}
                           </p>
                         )}
                         <ul className="m-0 mb-3 pl-4">
@@ -332,24 +379,19 @@ export default function DashboardClient({
                           ))}
                         </ul>
                         {branch.lastReview ? (
-                          <div
-                            className="rounded-lg px-3 py-2.5"
+                          <span
+                            className="inline-block px-2 h-5 rounded text-[var(--font-2xs)] font-semibold"
                             style={{
-                              background: "#fafafb",
-                              border: ".5px solid rgba(0,0,0,.06)",
+                              background: "rgba(52,199,89,.12)",
+                              color: "#1a7f37",
                             }}
                           >
-                            <p className="text-[var(--font-xs)] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-1.5">
-                              コードレビュー結果
-                            </p>
-                            <p className="text-[var(--font-sm)] text-[#3a3a3c] m-0 whitespace-pre-wrap leading-relaxed">
-                              {branch.lastReview}
-                            </p>
-                          </div>
+                            レビューあり
+                          </span>
                         ) : (
-                          <p className="text-[var(--font-sm)] text-[#a1a1a6] m-0">
+                          <span className="text-[var(--font-xs)] text-[#a1a1a6]">
                             レビュー未実施
-                          </p>
+                          </span>
                         )}
                       </div>
                     ))}
@@ -495,6 +537,25 @@ export default function DashboardClient({
               ),
             );
             setSelectedBranchOpInquiry(null);
+          }}
+        />
+      )}
+      {/* ブランチ詳細モーダル */}
+      {selectedBranch && (
+        <BranchDetailModal
+          branch={{
+            ...selectedBranch,
+            assignee:
+              localAssignees[selectedBranch.id] ?? selectedBranch.assignee,
+            completed:
+              localCompleted[selectedBranch.id] ?? selectedBranch.completed,
+          }}
+          onClose={() => setSelectedBranch(null)}
+          onAssigneeUpdated={(branchId, newAssignee) => {
+            setLocalAssignees((prev) => ({ ...prev, [branchId]: newAssignee }));
+          }}
+          onCompletedToggled={(branchId, completed) => {
+            setLocalCompleted((prev) => ({ ...prev, [branchId]: completed }));
           }}
         />
       )}

@@ -41,6 +41,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "ignored" });
     }
 
+    //ブランチの初回pushはレビューをスキップする
+    //そのpushでブランチが新規作成された場合「payload.created」がtrueになるので、その場合はスキップする。
+    //最初のpushは勝手に全ブランチがpushされて、不要なレビューまで発生するのでここで対策している。
+    if (payload.created === true) {
+      return NextResponse.json({ message: "initial push skipped" });
+    }
+
     //pushされたブランチ名を取得("refs/heads/feature/login"→"feature/login")
     const branchName = (payload.ref as string).replace("refs/heads/", "");
 

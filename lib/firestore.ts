@@ -140,6 +140,14 @@ export async function updateBranchReview(
   });
 }
 
+//ブランチの担当者を更新する
+export async function updateBranch(
+  id: string,
+  data: { assignee?: string; completed?: boolean },
+): Promise<void> {
+  await getDB().collection("branches").doc(id).update(data);
+}
+
 //問い合わせをFirestoreに保存する
 export async function saveInquiry(data: Omit<Inquiry, "id">): Promise<string> {
   const docRef = await getDB()
