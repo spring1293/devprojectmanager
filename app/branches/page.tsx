@@ -89,14 +89,14 @@ export default function BranchesPage() {
 
   //loadingもerrorもなければ、確認画面を表示する。
   return (
-    <main className="max-w-2xl mx-auto py-16 px-4">
+    <main className="max-w-5xl mx-auto py-16 px-4">
       <h1 className="text-2xl font-bold mb-8">ブランチ設計・担当者アサイン</h1>
       <p className="text-sm text-gray-500 mb-4">
         AIが生成した叩き台です。担当者メールを入力して確定してください。
       </p>
 
       {/* ブランチ一覧 */}
-      <ul className="space-y-4 mb-8">
+      <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
         {branches.map((branch, index) => (
           <li key={branch.id} className="border rounded p-4 space-y-2">
             {/* ブランチ名 */}

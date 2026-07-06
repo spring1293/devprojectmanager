@@ -61,14 +61,14 @@ export default function FeaturesPage() {
     );
 
   return (
-    <main className="max-w-2xl mx-auto py-16 px-4">
+    <main className="max-w-5xl mx-auto py-16 px-4">
       <h1 className="text-2xl font-bold mb-8">機能要件表</h1>
       <p className="text-sm text-gray-500 mb-4">
         AIが生成した叩き台です。内容を確認・編集してください。
       </p>
 
       {/*機能要件リスト*/}
-      <ul className="space-y-4">
+      <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {features.map((feature, index) => (
           <li key={feature.id} className="border rounded p-4">
             <div className="flex justify-between items-start gap-2">
@@ -145,7 +145,7 @@ export default function FeaturesPage() {
       >
         +機能を追加する
       </button>
-      {/*　確定ボタン。要件を保存して次のフェーズへ進む */}
+      {/*　確定ボタン。次のフェーズへ進む */}
       <button
         className="mt-8 px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700"
         disabled={features.length === 0}

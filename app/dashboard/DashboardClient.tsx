@@ -160,13 +160,7 @@ export default function DashboardClient({
         {/* ブランド行 */}
         <div className="px-[22px] pt-[22px] pb-[18px]">
           <p className="text-[20px] font-semibold text-[#0000cd] tracking-tight m-0">
-            ハツメイカー
-          </p>
-          <p className="text-[20px] font-semibold text-[#0000cd] tracking-tight m-0">
-            (デジタルモデル)
-          </p>
-          <p className="text-[var(--font-xs)] text-[#8a8a8e] m-0">
-            Software Only
+            🛎️FlowForge🛎️
           </p>
           <p className="text-[var(--font-xs)] text-[#8a8a8e] m-0">
             DevOps Support
@@ -220,6 +214,9 @@ export default function DashboardClient({
           style={{
             padding: "10px 14px",
             borderTop: ".5px solid rgba(0,0,0,.08)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
           }}
         >
           <button
@@ -228,6 +225,13 @@ export default function DashboardClient({
             style={{ background: "rgba(10,132,255,.10)", color: "#0a6fe0" }}
           >
             ＋ 新規プロジェクト追加
+          </button>
+          <button
+            onClick={() => router.push("/inquiry")}
+            className="w-full h-9 rounded-lg text-[var(--font-sm)] font-semibold border-none cursor-pointer"
+            style={{ background: "rgba(0,0,0,.06)", color: "#3a3a3c" }}
+          >
+            お問い合わせフォーム(テスト用)
           </button>
         </div>
 
@@ -345,7 +349,7 @@ export default function DashboardClient({
                     </button>
                   </div>
 
-                  <div className="flex flex-col gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {filteredBranches.map((branch) => (
                       <div
                         key={branch.id}

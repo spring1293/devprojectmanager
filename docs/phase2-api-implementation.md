@@ -38,7 +38,7 @@ GeminiAPIの初期化と2つの関数を実装。
 
 ### 使用モデル
 
-- テキスト生成：`gemini-2.0-flash`
+- テキスト生成：`gemini-2.5-flash`
 - Embedding：`text-embedding-004`（現在スキップ中）
 
 ---

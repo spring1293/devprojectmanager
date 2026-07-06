@@ -53,6 +53,7 @@ export default function OpsDetailClient({
     initial.dueDate ?? null,
   );
   const [saving, setSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const patch = async (data: Partial<Inquiry>) => {
     setSaving(true);
@@ -81,6 +82,12 @@ export default function OpsDetailClient({
     Array.isArray(initial.embeddingVector) &&
       initial.embeddingVector.length > 0,
   );
+
+  const handleCopyAnswer = () => {
+    if (!inquiry.suggestedAnswer) return;
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const retryAI = async (action: "classify" | "embed") => {
     setSaving(true);
@@ -189,9 +196,26 @@ export default function OpsDetailClient({
                 "0 1px 3px rgba(0,0,0,.06), inset 0 0 0 .5px rgba(0,0,0,.10)",
             }}
           >
-            <p className="text-[var(--font-xs)] font-semibold text-[#a1a1a6] tracking-wide m-0 mb-3">
-              AI 回答提案
-            </p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[var(--font-xs)] font-semibold text-[#a1a1a6] tracking-wide m-0">
+                AI 回答提案
+              </p>
+              {inquiry.suggestedAnswer && (
+                <button
+                  onClick={handleCopyAnswer}
+                  className="flex items-center gap-1 px-2 h-6 rounded-md text-[var(--font-2xs)] font-semibold border-none cursor-pointer"
+                  style={{
+                    background: copied
+                      ? "rgba(52,199,89,.12)"
+                      : "rgba(0,0,0,.06)",
+                    color: copied ? "#1a7f37" : "#6e6e73",
+                  }}
+                >
+                  {copied ? "✓ コピー済み" : "📋 コピー"}
+                </button>
+              )}
+            </div>
+
             <p className="text-[var(--font-base)] text-[#3a3a3c] m-0 leading-relaxed whitespace-pre-wrap">
               {inquiry.suggestedAnswer || "提案なし"}
             </p>
@@ -558,17 +582,6 @@ export default function OpsDetailClient({
               )}
             </div>
           </div>
-
-          {/* Dev連携 */}
-          {inquiry.confirmedCategory === "feature" && (
-            <button
-              onClick={() => router.push("/analyze")}
-              className="w-full h-10 rounded-lg text-[var(--font-base)] font-semibold border-none cursor-pointer"
-              style={{ background: "#30a14e", color: "#fff" }}
-            >
-              要件定義として起票する →
-            </button>
-          )}
         </div>
       </div>
     </div>
