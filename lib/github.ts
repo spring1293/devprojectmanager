@@ -15,7 +15,7 @@ async function getAuthenticatedUser(): Promise<string> {
 export async function createRepository(repoName: string): Promise<string> {
   const { data } = await octokit.rest.repos.createForAuthenticatedUser({
     name: repoName,
-    private: true,
+    private: false,
     auto_init: true, //READMEを自動作成してmainブランチを作る。
   });
   return data.full_name; //例:"username/reponame"
